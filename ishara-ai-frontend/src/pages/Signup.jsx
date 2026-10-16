@@ -1,6 +1,6 @@
-
 import { useState } from "react";
-import "./App.css";
+import "../App.css";
+      
 
 function App() {
   const [form, setForm] = useState({
@@ -144,15 +144,14 @@ function App() {
             </button>
           </form>
 
-          <p className="login-prompt">
-            Already have an account? <button
-              className="text-button"
-              type="button"
-              onClick={() => setMessage("The Login screen will be added next.")}
-            >
-              Sign in
-            </button>
-          </p>
+          
+            <p className="login-prompt">
+            Already have an account?{" "}
+            <a className="text-button" href="/login">
+                Sign in
+            </a>
+            </p>
+
 
           <p className="privacy-note">
             Your account details will be handled securely when backend
