@@ -1,0 +1,314 @@
+
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap");
+
+:root {
+  font-family: "DM Sans", sans-serif;
+  color: #f4f7fb;
+  background: #0b1424;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-optical-sizing: auto;
+  font-weight: 400;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 3px solid #63e6d1;
+  outline-offset: 3px;
+}
+
+.page {
+  min-height: 100vh;
+  padding: 0 7%;
+  background:
+    radial-gradient(ellipse at 12% 45%, #153044 0%, transparent 42%),
+    #0b1424;
+}
+
+.topbar {
+  min-height: 88px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #ffffff12;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  color: #f4f7fb;
+  text-decoration: none;
+  font-family: "Manrope", sans-serif;
+  font-weight: 800;
+  letter-spacing: 1.3px;
+  font-size: 18px;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: #62e4cf;
+  color: #0b1424;
+  font-size: 23px;
+}
+
+.brand-accent {
+  color: #62e4cf;
+}
+
+.topbar-note {
+  color: #a7b5c8;
+  font-size: 13px;
+}
+
+.signup-layout {
+  width: 100%;
+  max-width: 1120px;
+  margin: 65px auto 55px;
+  display: grid;
+  grid-template-columns: 1fr 440px;
+  gap: 72px;
+  align-items: center;
+}
+
+.intro {
+  max-width: 490px;
+}
+
+.eyebrow,
+.card-label {
+  color: #62e4cf;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.intro h1 {
+  margin: 22px 0 18px;
+  font-family: "Manrope", sans-serif;
+  font-size: clamp(36px, 4.4vw, 55px);
+  line-height: 1.15;
+  letter-spacing: -1.8px;
+}
+
+.intro > p {
+  max-width: 420px;
+  color: #aab8ca;
+  line-height: 1.8;
+  font-size: 15px;
+}
+
+.feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  margin-top: 32px;
+}
+
+.feature-icon {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  color: #62e4cf;
+  background: #62e4cf15;
+  border: 1px solid #62e4cf35;
+  border-radius: 12px;
+  font-size: 23px;
+}
+
+.feature h3 {
+  margin: 1px 0 6px;
+  font-size: 14px;
+}
+
+.feature p {
+  margin: 0;
+  color: #aab8ca;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.signup-card {
+  padding: 34px;
+  background: #111e30;
+  border: 1px solid #ffffff14;
+  border-radius: 20px;
+  box-shadow: 0 24px 70px #00000025;
+}
+
+.card-heading h2 {
+  margin: 12px 0 8px;
+  font-family: "Manrope", sans-serif;
+  font-size: 25px;
+  letter-spacing: -0.6px;
+}
+
+.card-heading > p {
+  margin: 0 0 27px;
+  color: #aab8ca;
+  font-size: 13px;
+}
+
+.signup-card form {
+  display: flex;
+  flex-direction: column;
+}
+
+.signup-card label {
+  margin: 0 0 8px;
+  color: #e6edf6;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.signup-card input {
+  width: 100%;
+  min-height: 46px;
+  margin-bottom: 18px;
+  padding: 0 13px;
+  border: 1px solid #344359;
+  border-radius: 9px;
+  background: #0c1727;
+  color: #f4f7fb;
+  font-size: 13px;
+}
+
+.signup-card input::placeholder {
+  color: #718198;
+}
+
+.signup-card input:focus {
+  border-color: #62e4cf;
+}
+
+.submit-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 4px;
+  border: 0;
+  border-radius: 9px;
+  background: #62e4cf;
+  color: #0b1424;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.submit-button:hover {
+  background: #81f0de;
+  transform: translateY(-1px);
+}
+
+.form-message {
+  padding: 11px;
+  border-radius: 8px;
+  background: #62e4cf12;
+  color: #91f0df;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.login-prompt {
+  margin: 23px 0 0;
+  text-align: center;
+  color: #aab8ca;
+  font-size: 12px;
+}
+
+.text-button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #62e4cf;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.privacy-note {
+  margin: 24px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid #ffffff12;
+  color: #8190a5;
+  text-align: center;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.footer {
+  padding: 20px 0 27px;
+  border-top: 1px solid #ffffff12;
+  color: #8190a5;
+  text-align: center;
+  font-size: 11px;
+}
+
+.footer span {
+  padding: 0 6px;
+  color: #62e4cf;
+}
+
+@media (max-width: 900px) {
+  .signup-layout {
+    grid-template-columns: 1fr;
+    max-width: 520px;
+    gap: 38px;
+    margin-top: 42px;
+  }
+
+  .intro h1 {
+    font-size: 42px;
+  }
+}
+
+@media (max-width: 520px) {
+  .page {
+    padding: 0 5%;
+  }
+
+  .topbar {
+    min-height: 72px;
+  }
+
+  .topbar-note {
+    max-width: 125px;
+    text-align: right;
+    line-height: 1.5;
+    font-size: 11px;
+  }
+
+  .intro h1 {
+    font-size: 36px;
+  }
+
+  .signup-card {
+    padding: 23px 19px;
+  }
+}
