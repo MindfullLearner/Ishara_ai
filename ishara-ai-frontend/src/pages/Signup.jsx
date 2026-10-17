@@ -1,170 +1,148 @@
+
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import "../App.css";
-      
 
-function App() {
-  const [form, setForm] = useState({
-    fullName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-
+export default function Signup() {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [message, setMessage] = useState("");
 
-  function handleChange(event) {
-    setForm({ ...form, [event.target.name]: event.target.value });
+  function handleSubmit(e) {
+    e.preventDefault();
     setMessage("");
-  }
 
-  function handleSubmit(event) {
-    event.preventDefault();
-
-    if (form.password !== form.confirmPassword) {
-      setMessage("Your passwords do not match.");
-      return;
-    }
-
-    if (form.password.length < 8) {
+    if (password.length < 8) {
       setMessage("Your password must be at least 8 characters.");
       return;
     }
 
-    setMessage(
-      "Form validated! Account creation will be connected to the backend later."
-    );
+    if (password !== confirmPassword) {
+      setMessage("Your passwords do not match.");
+      return;
+    }
+
+    // Frontend demonstration only.
+    // Connect your backend registration API here later.
+    setMessage("Your form is ready. Account creation is not connected to a backend yet.");
   }
 
   return (
-    <main className="page">
-      <header className="topbar">
-        <a className="brand" href="/" aria-label="ISHARA AI home">
-          <span className="brand-mark" aria-hidden="true">I</span>
-          <span>ISHARA <span className="brand-accent">AI</span></span>
-        </a>
-        <span className="topbar-note">Communication without barriers</span>
-      </header>
-
-      <section className="signup-layout">
-        <div className="intro">
-          <span className="eyebrow">WELCOME TO ISHARA AI</span>
-          <h1>Every sign deserves to be understood.</h1>
-          <p>
-            A more accessible way to connect through Pakistani Sign Language.
-            Create your account to get started.
-          </p>
-
-          <div className="feature">
-            <span className="feature-icon" aria-hidden="true">◎</span>
-            <div>
-              <h3>Accessible communication</h3>
-              <p>Designed with clarity and accessibility in mind.</p>
-            </div>
-          </div>
-
-          <div className="feature">
-            <span className="feature-icon" aria-hidden="true">↗</span>
-            <div>
-              <h3>One step at a time</h3>
-              <p>Sign in, submit a sign-language query, and view a response.</p>
-            </div>
-          </div>
-        </div>
-
-        <section className="signup-card" aria-labelledby="signup-title">
-          <div className="card-heading">
-            <span className="card-label">GET STARTED</span>
-            <h2 id="signup-title">Create your account</h2>
-            <p>Enter your details below to register.</p>
-          </div>
-
-          <form onSubmit={handleSubmit}>
-            <label htmlFor="fullName">Full name</label>
-            <input
-              id="fullName"
-              name="fullName"
-              type="text"
-              autoComplete="name"
-              placeholder="Enter your full name"
-              minLength={2}
-              maxLength={120}
-              value={form.fullName}
-              onChange={handleChange}
-              required
-            />
-
-            <label htmlFor="email">Email address</label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              placeholder="you@example.com"
-              value={form.email}
-              onChange={handleChange}
-              required
-            />
-
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="new-password"
-              placeholder="At least 8 characters"
-              minLength={8}
-              maxLength={128}
-              value={form.password}
-              onChange={handleChange}
-              required
-            />
-
-            <label htmlFor="confirmPassword">Confirm password</label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              placeholder="Enter your password again"
-              minLength={8}
-              maxLength={128}
-              value={form.confirmPassword}
-              onChange={handleChange}
-              required
-            />
-
-            {message && (
-              <p className="form-message" role="status">
-                {message}
-              </p>
-            )}
-
-            <button className="submit-button" type="submit">
-              Create account <span aria-hidden="true">→</span>
-            </button>
-          </form>
-
-          
-            <p className="login-prompt">
-            Already have an account?{" "}
-            <a className="text-button" href="/login">
-                Sign in
-            </a>
+    <main className="auth-page">
+      <section className="auth-card signup-card">
+        <section className="form-panel signup-form-panel">
+          <div className="auth-form-wrap signup-form-wrap">
+            <h2>Create Your Account</h2>
+            <p className="form-subtitle">
+              Join Ishara AI and be part of an inclusive community.
             </p>
 
+            <form onSubmit={handleSubmit}>
+              <label className="field-label" htmlFor="signup-name"><img src="/icons/user.png" alt="" />
+                Full Name
+              </label>
+              <input
+                id="signup-name"
+                type="text"
+                placeholder="Enter your full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoComplete="name"
+                required
+              />
 
-          <p className="privacy-note">
-            Your account details will be handled securely when backend
-            integration is added.
-          </p>
+              <label className="field-label" htmlFor="signup-name"><img src="/icons/user.png" alt="" />
+                Email Address
+              </label>
+              <input
+                id="signup-email"
+                type="email"
+                placeholder="Enter your email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                required
+              />
+
+              <label className="field-label" htmlFor="login-password"><img src="/icons/padlock.png" alt="" />
+                Password
+              </label>
+              <div className="password-wrap">
+                <input
+                  id="signup-password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Create a strong password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="new-password"
+                  required
+                />
+                <button
+                  className="password-toggle"
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+
+              <label className="field-label" htmlFor="login-password"><img src="/icons/padlock.png" alt="" />
+                Confirm Password
+              </label>
+              <div className="password-wrap">
+                <input
+                  id="signup-confirm"
+                  type={showConfirm ? "text" : "password"}
+                  placeholder="Re-enter your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
+                  required
+                />
+                <button
+                  className="password-toggle"
+                  type="button"
+                  onClick={() => setShowConfirm(!showConfirm)}
+                >
+                  {showConfirm ? "Hide" : "Show"}
+                </button>
+              </div>
+
+              {message && <p className="form-message">{message}</p>}
+
+              <button className="primary-button" type="submit">
+                Create Account <span>→</span>
+              </button>
+            </form>
+
+            <p className="auth-switch signup-switch">
+              Already have an account? <Link to="/login">Login</Link>
+            </p>
+          </div>
         </section>
-      </section>
 
-      <footer className="footer">
-        ISHARA AI <span>·</span> Built for accessible communication
-      </footer>
+        <aside className="brand-panel signup-brand">
+          <Link to="/login" className="brand-logo centered-logo">
+            <img src="/ishara_logo.png" alt="ISHARA.AI logo" />
+            <span>ISHARA.AI</span>
+          </Link>
+
+          <div className="signup-art" aria-hidden="true">
+            <span className="art-orb orb-four" />
+            <span className="art-orb orb-five" />
+            <span className="hands-symbol signup-hands">🤟</span>
+          </div>
+
+          <div className="signup-brand-copy">
+            <h2>Together for a<br />more inclusive world</h2>
+            <p>Technology that understands everyone.</p>
+          </div>
+        </aside>
+      </section>
     </main>
   );
 }
-
-export default App;

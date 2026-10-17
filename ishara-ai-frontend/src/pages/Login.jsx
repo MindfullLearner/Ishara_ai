@@ -1,109 +1,132 @@
 
 import { useState } from "react";
+import { Link } from "react-router-dom";
+import "../App.css";
 
-function Login() {
+export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [remember, setRemember] = useState(true);
+  const [error, setError] = useState("");
 
-  function handleSubmit(event) {
-    event.preventDefault();
+  function handleSubmit(e) {
+    e.preventDefault();
+    setError("");
 
-    setMessage(
-      "Login form validated. Backend authentication will be connected later."
-    );
+    if (!email.trim() || !password) {
+      setError("Please enter your email and password.");
+      return;
+    }
+
+    // Frontend demonstration only.
+    // Connect your backend authentication API here later.
+    setError("Login form is ready. Backend authentication is not connected yet.");
   }
 
   return (
-    <main className="page">
-      <header className="topbar">
-        <a className="brand" href="/" aria-label="ISHARA AI home">
-          <span className="brand-mark">I</span>
-          <span>
-            ISHARA <span className="brand-accent">AI</span>
-          </span>
-        </a>
-        <span className="topbar-note">
-          Communication without barriers
-        </span>
-      </header>
+    <main className="auth-page">
+      <section className="auth-card login-card">
+        <aside className="brand-panel login-brand">
+          <Link to="/login" className="brand-logo">
+            <img src="/ishara_logo.png" alt="ISHARA.AI logo" />
+            <span>ISHARA.AI</span>
+          </Link>
 
-      <section className="signup-layout">
-        <div className="intro">
-          <span className="eyebrow">WELCOME BACK</span>
-          <h1>Your journey toward accessible communication continues.</h1>
-          <p>
-            Sign in to access your ISHARA AI workspace and
-            communicate through Pakistani Sign Language.
-          </p>
-        </div>
-
-        <section className="signup-card" aria-labelledby="login-title">
-          <div className="card-heading">
-            <span className="card-label">YOUR ACCOUNT</span>
-            <h2 id="login-title">Sign in</h2>
-            <p>Enter your account details to continue.</p>
+          <div className="brand-copy">
+            <h1>Communication<br />without barriers</h1>
+            <p>
+              AI-powered sign language assistant for a more
+              inclusive tomorrow.
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit}>
-            <label htmlFor="email">Email address</label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(event) => {
-                setEmail(event.target.value);
-                setMessage("");
-              }}
-              required
-            />
+          <div className="hands-art" aria-hidden="true">
+            <span className="art-orb orb-one" />
+            <span className="art-orb orb-two" />
+            <span className="art-orb orb-three" />
+            <span className="hands-symbol">🤟</span>
+          </div>
 
-            <label htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(event) => {
-                setPassword(event.target.value);
-                setMessage("");
-              }}
-              required
-            />
+          <div className="brand-features">
+            <div><span><img src="/icons/message.png" alt="Message" /></span><small>Type</small></div>
+            <div><span><img src="/icons/camera.png" alt="Camera" /></span><small>Record</small></div>
+            <div><span><img src="/icons/handRaise.png" alt="Hand Raise" /></span><small>Get Response</small></div>
+          </div>
+        </aside>
 
-            {message && (
-              <p className="form-message" role="status">
-                {message}
-              </p>
-            )}
+        <section className="form-panel">
+          <div className="auth-form-wrap">
+            <h2>Welcome Back!</h2>
+            <p className="form-subtitle">Sign in to continue to Ishara AI.</p>
 
-            <button className="submit-button" type="submit">
-              Sign in <span aria-hidden="true">→</span>
-            </button>
-          </form>
+            <form onSubmit={handleSubmit}>
+              <label className="field-label" htmlFor="login-email"><img src="/icons/user.png" alt="User" />
 
-          <p className="login-prompt">
-            Don't have an account?{" "}
-            <a className="text-button" href="/signup">
-              Create an account
-            </a>
-          </p>
+                Email address
+              </label>
+              <input
+                id="login-email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                required
+              />
 
-          <p className="privacy-note">
-            Secure authentication will be enabled when the
-            backend is connected.
-          </p>
+              <label className="field-label" htmlFor="login-password"><img src="/icons/padlock.png" alt="" />
+                Password
+              </label>
+              <div className="password-wrap">
+                <input
+                  id="login-password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  autoComplete="current-password"
+                  required
+                />
+                <button
+                  className="password-toggle"
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+
+              <div className="form-options">
+                <label className="remember-option">
+                  <input
+                    type="checkbox"
+                    checked={remember}
+                    onChange={(e) => setRemember(e.target.checked)}
+                  />
+                  Remember me
+                </label>
+                <Link to="/forgot-password" className="small-link">
+                  Forgot password?
+                </Link>
+              </div>
+
+              {error && <p className="form-message">{error}</p>}
+
+              <button className="primary-button" type="submit">
+                Login <span>→</span>
+              </button>
+            </form>
+
+            <div className="or-divider"><span>or</span></div>
+
+            <p className="auth-switch">
+              Don't have an account? <Link to="/signup">Sign Up</Link>
+            </p>
+          </div>
         </section>
       </section>
-
-      <footer className="footer">
-        ISHARA AI <span>·</span> Built for accessible communication
-      </footer>
     </main>
   );
 }
-
-export default Login;
