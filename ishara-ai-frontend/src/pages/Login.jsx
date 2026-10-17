@@ -3,130 +3,282 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import "../App.css";
 
-export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(true);
+const SYMBOLS = [
+  { id: "heart", icon: "❤️", label: "Heart" },
+  { id: "star", icon: "⭐", label: "Star" },
+  { id: "moon", icon: "🌙", label: "Moon" },
+  { id: "sun", icon: "☀️", label: "Sun" },
+  { id: "flower", icon: "🌸", label: "Flower" },
+  { id: "lightning", icon: "⚡", label: "Lightning" },
+  { id: "leaf", icon: "🍃", label: "Leaf" },
+  { id: "rainbow", icon: "🌈", label: "Rainbow" },
+];
+
+const SEQUENCE_LENGTH = 5;
+
+function Login() {
+  const [username, setUsername] = useState("");
+  const [selectedSymbols, setSelectedSymbols] = useState([]);
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [showTutorialInfo, setShowTutorialInfo] = useState(false);
 
-  function handleSubmit(e) {
-    e.preventDefault();
+  function selectSymbol(symbol) {
     setError("");
+    setNotice("");
 
-    if (!email.trim() || !password) {
-      setError("Please enter your email and password.");
+    setSelectedSymbols((previous) => {
+      if (previous.length >= SEQUENCE_LENGTH) return previous;
+      return [...previous, symbol.id];
+    });
+  }
+
+  function undoLastSymbol() {
+    setSelectedSymbols((previous) => previous.slice(0, -1));
+    setError("");
+    setNotice("");
+  }
+
+  function clearSequence() {
+    setSelectedSymbols([]);
+    setError("");
+    setNotice("");
+  }
+
+  function handleLogin(event) {
+    event.preventDefault();
+    setError("");
+    setNotice("");
+
+    const cleanUsername = username.trim();
+
+    if (!/^[a-zA-Z0-9_]{3,30}$/.test(cleanUsername)) {
+      setError(
+        "Enter a valid username using 3–30 letters, numbers, or underscores."
+      );
       return;
     }
 
-    // Frontend demonstration only.
-    // Connect your backend authentication API here later.
-    setError("Login form is ready. Backend authentication is not connected yet.");
+    if (selectedSymbols.length !== SEQUENCE_LENGTH) {
+      setError("Please select all five symbols in your sequence.");
+      return;
+    }
+
+    // Backend integration will go here.
+    // The server must validate the username and symbol credential,
+    // enforce the three-attempt limit, and check optional verification.
+    setNotice(
+      "The login interface is ready, but account verification is not connected yet. Connect the backend before using real accounts."
+    );
   }
 
   return (
-    <main className="auth-page">
-      <section className="auth-card login-card">
-        <aside className="brand-panel login-brand">
-          <Link to="/login" className="brand-logo">
-            <img src="/ishara_logo.png" alt="ISHARA.AI logo" />
-            <span>ISHARA.AI</span>
-          </Link>
+    <main className="ishara-login-page">
+      <section className="ishara-login-brand">
+        <div className="ishara-login-brand-content">
+          <img
+            src="/ishara_logo.png"
+            alt="ISHARA AI logo"
+            className="ishara-login-logo"
+          />
 
-          <div className="brand-copy">
-            <h1>Communication<br />without barriers</h1>
-            <p>
-              AI-powered sign language assistant for a more
-              inclusive tomorrow.
-            </p>
+          <div className="ishara-login-mark" aria-hidden="true">
+            🤟
           </div>
 
-          <div className="hands-art" aria-hidden="true">
-            <span className="art-orb orb-one" />
-            <span className="art-orb orb-two" />
-            <span className="art-orb orb-three" />
-            <span className="hands-symbol">🤟</span>
+          <h1>Communication without barriers.</h1>
+
+          <p>
+            Welcome back to ISHARA AI, where technology helps people
+            understand one another.
+          </p>
+
+          <div className="ishara-login-features">
+            <div>
+              <span>💬</span>
+              <small>Type</small>
+            </div>
+            <div>
+              <span>📷</span>
+              <small>Record</small>
+            </div>
+            <div>
+              <span>🤟</span>
+              <small>Get response</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="ishara-login-form-section">
+        <div className="ishara-login-card">
+          <div className="ishara-login-heading">
+            <span className="ishara-login-eyebrow">WELCOME BACK</span>
+            <h2>Sign in to ISHARA AI</h2>
+            <p>Use your username and personal symbol sequence.</p>
           </div>
 
-          <div className="brand-features">
-            <div><span><img src="/icons/message.png" alt="Message" /></span><small>Type</small></div>
-            <div><span><img src="/icons/camera.png" alt="Camera" /></span><small>Record</small></div>
-            <div><span><img src="/icons/handRaise.png" alt="Hand Raise" /></span><small>Get Response</small></div>
-          </div>
-        </aside>
-
-        <section className="form-panel">
-          <div className="auth-form-wrap">
-            <h2>Welcome Back!</h2>
-            <p className="form-subtitle">Sign in to continue to Ishara AI.</p>
-
-            <form onSubmit={handleSubmit}>
-              <label className="field-label" htmlFor="login-email"><img src="/icons/user.png" alt="User" />
-
-                Email address
-              </label>
+          <form onSubmit={handleLogin} noValidate>
+            <div className="ishara-login-field">
+              <label htmlFor="ishara-login-username">Username</label>
               <input
-                id="login-email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
+                id="ishara-login-username"
+                name="username"
+                type="text"
+                autoComplete="username"
+                placeholder="Enter your username"
+                value={username}
+                maxLength={30}
+                onChange={(event) => {
+                  setUsername(event.target.value);
+                  setError("");
+                  setNotice("");
+                }}
                 required
               />
+            </div>
 
-              <label className="field-label" htmlFor="login-password"><img src="/icons/padlock.png" alt="" />
-                Password
-              </label>
-              <div className="password-wrap">
-                <input
-                  id="login-password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  required
-                />
+            <div className="ishara-login-divider" />
+
+            <div className="ishara-login-step-heading">
+              <span className="ishara-login-step-number">1</span>
+              <div>
+                <h3>Your symbol sequence</h3>
+                <p>Select your five symbols in the order you created them.</p>
+              </div>
+            </div>
+
+            <div className="ishara-login-symbol-options">
+              {SYMBOLS.map((symbol) => (
                 <button
-                  className="password-toggle"
+                  key={symbol.id}
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  className="ishara-login-symbol-option"
+                  onClick={() => selectSymbol(symbol)}
+                  disabled={selectedSymbols.length >= SEQUENCE_LENGTH}
+                  aria-label={`Select ${symbol.label}`}
+                  title={symbol.label}
                 >
-                  {showPassword ? "Hide" : "Show"}
+                  {symbol.icon}
                 </button>
-              </div>
+              ))}
+            </div>
 
-              <div className="form-options">
-                <label className="remember-option">
-                  <input
-                    type="checkbox"
-                    checked={remember}
-                    onChange={(e) => setRemember(e.target.checked)}
-                  />
-                  Remember me
-                </label>
-                <Link to="/forgot-password" className="small-link">
-                  Forgot password?
-                </Link>
-              </div>
+            <div className="ishara-login-sequence-label">
+              <span>Selected sequence</span>
+              <span>
+                {selectedSymbols.length}/{SEQUENCE_LENGTH}
+              </span>
+            </div>
 
-              {error && <p className="form-message">{error}</p>}
+            <div
+              className="ishara-login-selected-sequence"
+              aria-label="Your selected symbol sequence"
+            >
+              {Array.from({ length: SEQUENCE_LENGTH }, (_, index) => {
+                const selected = SYMBOLS.find(
+                  (symbol) => symbol.id === selectedSymbols[index]
+                );
 
-              <button className="primary-button" type="submit">
-                Login <span>→</span>
+                return (
+                  <div
+                    key={index}
+                    className={`ishara-login-sequence-slot ${
+                      selected ? "is-filled" : ""
+                    }`}
+                  >
+                    {selected ? selected.icon : <span>{index + 1}</span>}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="ishara-login-actions">
+              <button
+                type="button"
+                className="ishara-login-secondary"
+                onClick={undoLastSymbol}
+                disabled={selectedSymbols.length === 0}
+              >
+                Undo last
               </button>
-            </form>
 
-            <div className="or-divider"><span>or</span></div>
+              <button
+                type="button"
+                className="ishara-login-secondary"
+                onClick={clearSequence}
+                disabled={selectedSymbols.length === 0}
+              >
+                Clear
+              </button>
+            </div>
 
-            <p className="auth-switch">
-              Don't have an account? <Link to="/signup">Sign Up</Link>
+            {error && (
+              <p className="ishara-login-error" role="alert">
+                {error}
+              </p>
+            )}
+
+            {notice && (
+              <p className="ishara-login-notice" role="status">
+                {notice}
+              </p>
+            )}
+
+            <button type="submit" className="ishara-login-submit">
+              Sign in
+            </button>
+          </form>
+
+          <div className="ishara-login-help">
+            <button
+              type="button"
+              className="ishara-login-text-button"
+              onClick={() => {
+                setError("");
+                setNotice(
+                  "Account recovery will use your verified email once the backend and email verification service are connected."
+                );
+              }}
+            >
+              Forgot your symbol sequence?
+            </button>
+
+            <p>
+              New to ISHARA AI? <Link to="/signup">Create an account</Link>
             </p>
           </div>
-        </section>
+
+          <button
+            type="button"
+            className="ishara-tutorial-button"
+            onClick={() => setShowTutorialInfo((previous) => !previous)}
+            aria-expanded={showTutorialInfo}
+          >
+            <span aria-hidden="true">▶</span>
+            Sign-language tutorial
+          </button>
+
+          {showTutorialInfo && (
+            <div className="ishara-tutorial-info" role="status">
+              <strong>Tutorial video</strong>
+              <p>
+                Add your video file to
+                <code> public/videos/login-tutorial.mp4 </code>
+                when it is ready. We can then connect it to this button.
+              </p>
+            </div>
+          )}
+
+          <p className="ishara-login-security-note">
+            Keep your symbol sequence private. Three failed login attempts
+            will trigger a temporary server-enforced lockout once
+            authentication is connected.
+          </p>
+        </div>
       </section>
     </main>
   );
 }
+
+export default Login;

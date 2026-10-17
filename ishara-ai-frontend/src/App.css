@@ -1,20 +1,33 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
+/* ========================================
+   ISHARA AI — COLORS & GLOBAL STYLES
+======================================== */
+
 :root {
   font-family: "Inter", Arial, sans-serif;
-  color: #211650;
-  background: #f6f4ff;
+  color: #344454;
+  background: #F5F7F8;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  --purple: #6532d3;
-  --purple-dark: #402091;
-  --purple-light: #eee7ff;
-  --border: #ddd5fa;
-  --muted: #77759b;
+  --blue: #8DBDEB;
+  --blue-dark: #397DB8;
+  --blue-deep: #285D88;
+  --blue-light: #EAF4FC;
+
+  --green: #A8DCC0;
+  --green-dark: #347A59;
+  --green-light: #EAF7F0;
+
+  --white-gray: #F5F7F8;
+  --slate: #344454;
+  --muted: #74818D;
+  --border: #DCE4E9;
+  --white: #FFFFFF;
 }
 
 * {
@@ -25,6 +38,8 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  font-family: "Inter", Arial, sans-serif;
+  background: var(--white-gray);
 }
 
 button,
@@ -38,13 +53,17 @@ a {
 }
 
 a {
-  color: var(--purple);
+  color: var(--blue-dark);
   text-decoration: none;
 }
 
 a:hover {
-  color: var(--purple-dark);
+  color: var(--blue-deep);
 }
+
+/* ========================================
+   PAGE BACKGROUND
+======================================== */
 
 .auth-page {
   min-height: 100vh;
@@ -52,11 +71,24 @@ a:hover {
   align-items: center;
   justify-content: center;
   padding: 36px 20px;
+
   background:
-    radial-gradient(ellipse at 12% 12%, #eee8ff 0, transparent 35%),
-    radial-gradient(ellipse at 90% 90%, #e9e1ff 0, transparent 32%),
-    #f8f7ff;
+    radial-gradient(
+      ellipse at 12% 12%,
+      var(--blue-light) 0,
+      transparent 35%
+    ),
+    radial-gradient(
+      ellipse at 90% 90%,
+      var(--green-light) 0,
+      transparent 32%
+    ),
+    var(--white-gray);
 }
+
+/* ========================================
+   AUTHENTICATION CARD
+======================================== */
 
 .auth-card {
   display: grid;
@@ -64,15 +96,20 @@ a:hover {
   width: min(100%, 1000px);
   min-height: 570px;
   overflow: hidden;
-  background: white;
-  border: 1px solid #d9d0fc;
-  border-radius: 13px;
-  box-shadow: 0 12px 38px rgba(73, 43, 139, 0.09);
+
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 12px 38px rgba(52, 68, 84, 0.09);
 }
 
 .signup-card {
   grid-template-columns: 1.08fr 0.92fr;
 }
+
+/* ========================================
+   BRANDING PANELS
+======================================== */
 
 .brand-panel {
   position: relative;
@@ -80,13 +117,18 @@ a:hover {
   flex-direction: column;
   overflow: hidden;
   padding: 34px;
+
   background:
-    radial-gradient(circle at 95% 8%, rgba(184, 151, 255, 0.22), transparent 28%),
-    linear-gradient(145deg, #f4f0ff, #e9e0ff);
+    radial-gradient(
+      circle at 95% 8%,
+      rgba(168, 220, 192, 0.35),
+      transparent 28%
+    ),
+    linear-gradient(145deg, #EAF4FC, #F0F7F5);
 }
 
 .login-brand {
-  border-right: 1px solid #e7dfff;
+  border-right: 1px solid var(--border);
 }
 
 .brand-logo {
@@ -94,10 +136,15 @@ a:hover {
   align-items: center;
   align-self: flex-start;
   gap: 10px;
-  color: #211650;
+
+  color: var(--slate);
   font-size: 21px;
   font-weight: 800;
   letter-spacing: -0.7px;
+}
+
+.brand-logo:hover {
+  color: var(--blue-deep);
 }
 
 .brand-logo img {
@@ -108,14 +155,14 @@ a:hover {
 }
 
 .brand-copy {
-  margin-top: 38px;
   position: relative;
   z-index: 2;
+  margin-top: 38px;
 }
 
 .brand-copy h1 {
   margin: 0 0 13px;
-  color: #4b23a5;
+  color: var(--blue-deep);
   font-size: clamp(27px, 3vw, 34px);
   line-height: 1.2;
   letter-spacing: -1.1px;
@@ -124,10 +171,14 @@ a:hover {
 .brand-copy p,
 .signup-brand-copy p {
   max-width: 290px;
-  color: #6c6891;
+  color: #596D7D;
   font-size: 13px;
   line-height: 1.8;
 }
+
+/* ========================================
+   DECORATIVE SIGN SYMBOL AREA
+======================================== */
 
 .hands-art,
 .signup-art {
@@ -146,9 +197,10 @@ a:hover {
   width: 185px;
   height: 155px;
   border-radius: 45% 55% 52% 48%;
-  background: linear-gradient(145deg, #ded0ff, #bca1ff);
+
+  background: linear-gradient(145deg, #DCEEFF, #C5E8D5);
   font-size: 100px;
-  filter: drop-shadow(0 14px 14px rgba(95, 53, 175, 0.16));
+  filter: drop-shadow(0 14px 14px rgba(57, 125, 184, 0.12));
   transform: rotate(-5deg);
 }
 
@@ -156,7 +208,6 @@ a:hover {
   position: absolute;
   display: block;
   border-radius: 50%;
-  background: #b28aff;
 }
 
 .orb-one {
@@ -164,6 +215,7 @@ a:hover {
   height: 12px;
   top: 24%;
   left: 12%;
+  background: var(--blue);
 }
 
 .orb-two {
@@ -171,6 +223,7 @@ a:hover {
   height: 17px;
   right: 13%;
   top: 20%;
+  background: var(--green);
 }
 
 .orb-three {
@@ -178,8 +231,13 @@ a:hover {
   height: 27px;
   bottom: 18%;
   left: 5%;
-  opacity: 0.45;
+  background: var(--green);
+  opacity: 0.65;
 }
+
+/* ========================================
+   FEATURE ICONS
+======================================== */
 
 .brand-features {
   display: flex;
@@ -194,9 +252,8 @@ a:hover {
   flex-direction: column;
   gap: 8px;
   min-width: 55px;
-  color: #4d2aa9;
+  color: var(--blue-deep);
 }
-
 
 .brand-features div > span {
   display: flex;
@@ -205,9 +262,10 @@ a:hover {
   width: 38px;
   height: 38px;
   padding: 8px;
+
+  background: var(--white);
+  border: 1px solid var(--border);
   border-radius: 12px;
-  background: #ffffff;
-  border: 1px solid #e1d6ff;
 }
 
 .brand-features div > span img {
@@ -218,17 +276,21 @@ a:hover {
 }
 
 .brand-features small {
-  color: #625b88;
+  color: #596D7D;
   font-size: 11px;
+  text-align: center;
 }
 
+/* ========================================
+   FORM PANEL
+======================================== */
 
 .form-panel {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 45px 44px;
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--white);
 }
 
 .auth-form-wrap {
@@ -238,7 +300,7 @@ a:hover {
 
 .auth-form-wrap h2 {
   margin: 0 0 7px;
-  color: #20154c;
+  color: var(--slate);
   font-size: 25px;
   font-weight: 800;
   letter-spacing: -0.7px;
@@ -251,12 +313,30 @@ a:hover {
   line-height: 1.7;
 }
 
+/* ========================================
+   INPUT LABELS & ICONS
+======================================== */
+
 .auth-form-wrap form > label {
   display: block;
   margin: 19px 0 8px;
-  color: #33265d;
+  color: var(--slate);
   font-size: 12px;
   font-weight: 600;
+}
+
+.auth-form-wrap form > label.field-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-label img {
+  display: block;
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .auth-form-wrap form > input,
@@ -264,24 +344,30 @@ a:hover {
   width: 100%;
   height: 46px;
   padding: 0 14px;
-  color: #24194d;
-  background: #fff;
-  border: 1px solid #dcd5f5;
+
+  color: var(--slate);
+  background: var(--white);
+  border: 1px solid var(--border);
   border-radius: 9px;
   outline: none;
   font-size: 12px;
+
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .auth-form-wrap input::placeholder {
-  color: #aaa5c5;
+  color: #8996A2;
 }
 
 .auth-form-wrap form > input:focus,
 .password-wrap input:focus {
-  border-color: #8557e8;
-  box-shadow: 0 0 0 3px rgba(117, 67, 218, 0.1);
+  border-color: var(--blue-dark);
+  box-shadow: 0 0 0 3px rgba(141, 189, 235, 0.25);
 }
+
+/* ========================================
+   PASSWORD VISIBILITY BUTTON
+======================================== */
 
 .password-wrap {
   position: relative;
@@ -295,14 +381,36 @@ a:hover {
   position: absolute;
   top: 50%;
   right: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 5px;
-  transform: translateY(-50%);
-  color: #65509b;
+
+  color: var(--blue-deep);
   background: transparent;
   border: 0;
+  border-radius: 5px;
+  transform: translateY(-50%);
   cursor: pointer;
   font-size: 10px;
+  font-weight: 600;
 }
+
+.password-toggle:hover {
+  background: var(--blue-light);
+}
+
+/* Optional PNG eye icon */
+.eye-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+/* ========================================
+   REMEMBER ME & FORGOT PASSWORD
+======================================== */
 
 .form-options {
   display: flex;
@@ -316,19 +424,24 @@ a:hover {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  color: #51466e;
+  color: #596D7D;
   font-size: 11px;
   cursor: pointer;
 }
 
 .remember-option input {
-  accent-color: var(--purple);
+  accent-color: var(--blue-dark);
+  cursor: pointer;
 }
 
 .small-link {
   font-size: 11px;
   font-weight: 700;
 }
+
+/* ========================================
+   PRIMARY BUTTON
+======================================== */
 
 .primary-button {
   display: flex;
@@ -338,32 +451,64 @@ a:hover {
   width: 100%;
   min-height: 47px;
   padding: 12px 18px;
-  color: #fff;
-  background: linear-gradient(100deg, #5927bd, #7839e9);
+
+  color: #FFFFFF;
+  background: linear-gradient(100deg, #397DB8, #6AA6D8);
   border: 0;
   border-radius: 9px;
-  box-shadow: 0 5px 12px rgba(93, 42, 195, 0.17);
+  box-shadow: 0 5px 12px rgba(57, 125, 184, 0.17);
+
   cursor: pointer;
   font-size: 13px;
   font-weight: 700;
+
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .primary-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 18px rgba(93, 42, 195, 0.24);
+  box-shadow: 0 8px 18px rgba(57, 125, 184, 0.24);
+}
+
+.primary-button:focus-visible,
+.password-toggle:focus-visible,
+a:focus-visible {
+  outline: 3px solid #397DB8;
+  outline-offset: 3px;
 }
 
 .primary-button span {
   font-size: 19px;
 }
 
+/* ========================================
+   MESSAGES
+======================================== */
+
+.form-message {
+  margin: 14px 0;
+  padding: 10px 12px;
+
+  color: #285D88;
+  background: var(--blue-light);
+  border: 1px solid #C9E2F6;
+  border-radius: 8px;
+
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+/* ========================================
+   DIVIDER & PAGE NAVIGATION
+======================================== */
+
 .or-divider {
   display: flex;
   align-items: center;
   gap: 14px;
   margin: 25px 0 22px;
-  color: #9890b5;
+
+  color: var(--muted);
   font-size: 11px;
 }
 
@@ -372,27 +517,29 @@ a:hover {
   content: "";
   flex: 1;
   height: 1px;
-  background: #e8e2f8;
+  background: var(--border);
 }
 
 .auth-switch {
   margin: 0;
   text-align: center;
-  color: #716b8d;
+  color: var(--muted);
   font-size: 11px;
 }
 
 .auth-switch a {
   margin-left: 6px;
+  color: var(--blue-dark);
   font-weight: 800;
 }
 
-.form-message {
-  margin: 14px 0;
-  color: #6840b8;
-  font-size: 12px;
-  line-height: 1.6;
+.auth-switch a:hover {
+  color: var(--blue-deep);
 }
+
+/* ========================================
+   SIGNUP FORM
+======================================== */
 
 .signup-form-panel {
   padding: 35px 42px;
@@ -424,11 +571,15 @@ a:hover {
   margin-top: 24px;
 }
 
+/* ========================================
+   SIGNUP BRANDING PANEL
+======================================== */
+
 .signup-brand {
   align-items: center;
   justify-content: flex-start;
   text-align: center;
-  border-left: 1px solid #e7dfff;
+  border-left: 1px solid var(--border);
 }
 
 .centered-logo {
@@ -453,6 +604,7 @@ a:hover {
   height: 24px;
   top: 15%;
   left: 13%;
+  background: var(--blue);
 }
 
 .orb-five {
@@ -460,11 +612,12 @@ a:hover {
   height: 15px;
   right: 10%;
   bottom: 18%;
+  background: var(--green);
 }
 
 .signup-brand-copy h2 {
   margin: 8px 0;
-  color: #45209b;
+  color: var(--blue-deep);
   font-size: 23px;
   line-height: 1.35;
   letter-spacing: -0.5px;
@@ -474,6 +627,10 @@ a:hover {
   margin: 8px auto 0;
   font-size: 12px;
 }
+
+/* ========================================
+   RESPONSIVE DESIGN
+======================================== */
 
 @media (max-width: 760px) {
   .auth-page {
@@ -494,7 +651,7 @@ a:hover {
 
   .login-brand {
     border-right: 0;
-    border-bottom: 1px solid #e7dfff;
+    border-bottom: 1px solid var(--border);
   }
 
   .brand-copy {
@@ -529,7 +686,7 @@ a:hover {
   .signup-brand {
     grid-row: 1;
     border-left: 0;
-    border-bottom: 1px solid #e7dfff;
+    border-bottom: 1px solid var(--border);
   }
 
   .signup-brand .signup-art {
@@ -561,17 +718,1139 @@ a:hover {
   .brand-panel {
     padding: 20px;
   }
+
+  .form-options {
+    flex-wrap: wrap;
+  }
 }
 
-.field-label {
-  display: flex !important;
+/* ========================================
+   REDUCED MOTION ACCESSIBILITY
+======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+
+/* =========================================
+   ISHARA AI - SIGNUP PAGE
+   Soft blue, soft green, gray-white theme
+   ========================================= */
+
+.ishara-signup-page {
+  --signup-blue: #8DBDEB;
+  --signup-blue-dark: #397DB8;
+  --signup-blue-deep: #285D88;
+  --signup-blue-light: #EAF4FC;
+  --signup-green: #A8DCC0;
+  --signup-green-dark: #347A59;
+  --signup-green-light: #EAF7F0;
+  --signup-bg: #F5F7F8;
+  --signup-text: #344454;
+  --signup-muted: #74818D;
+  --signup-border: #DCE4E9;
+
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(420px, 1.15fr);
+  min-height: 100vh;
+  color: var(--signup-text);
+  background: var(--signup-bg);
+}
+
+.ishara-signup-page *,
+.ishara-signup-page *::before,
+.ishara-signup-page *::after {
+  box-sizing: border-box;
+}
+
+.ishara-signup-brand {
+  position: relative;
+  display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  padding: 42px;
+  overflow: hidden;
+  background: linear-gradient(145deg, #EAF4FC 0%, #DCEEF9 55%, #EAF7F0 100%);
 }
 
-.field-label img {
-  width: 16px;
-  height: 16px;
+.ishara-signup-back {
+  position: absolute;
+  top: 28px;
+  left: 32px;
+  color: var(--signup-blue-deep);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.ishara-signup-back:hover {
+  text-decoration: underline;
+}
+
+.ishara-signup-brand-content {
+  width: 100%;
+  max-width: 390px;
+}
+
+.ishara-signup-logo {
+  display: block;
+  width: 145px;
+  max-height: 95px;
   object-fit: contain;
-  flex-shrink: 0;
+  margin-bottom: 18px;
+}
+
+.ishara-signup-mark {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(57, 125, 184, 0.15);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 40px;
+}
+
+.ishara-signup-brand-content h1 {
+  margin: 0 0 16px;
+  color: var(--signup-blue-deep);
+  font-size: clamp(30px, 3vw, 43px);
+  line-height: 1.15;
+  letter-spacing: -1px;
+}
+
+.ishara-signup-brand-content > p {
+  margin: 0 0 32px;
+  color: #536D80;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.ishara-signup-feature {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 17px;
+}
+
+.ishara-signup-feature > span {
+  display: grid;
+  place-items: center;
+  flex: 0 0 45px;
+  width: 45px;
+  height: 45px;
+  border-radius: 14px;
+  background: white;
+  font-size: 22px;
+}
+
+.ishara-signup-feature strong,
+.ishara-signup-feature small {
+  display: block;
+}
+
+.ishara-signup-feature strong {
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.ishara-signup-feature small {
+  color: var(--signup-muted);
+  font-size: 12px;
+}
+
+.ishara-signup-form-section {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-width: 0;
+  padding: 36px 24px;
+}
+
+.ishara-signup-card {
+  width: 100%;
+  max-width: 510px;
+  padding: 34px;
+  border: 1px solid #E7ECEF;
+  border-radius: 24px;
+  background: #FFFFFF;
+  box-shadow: 0 12px 45px rgba(52, 68, 84, 0.07);
+}
+
+.ishara-signup-heading {
+  margin-bottom: 26px;
+}
+
+.ishara-signup-eyebrow {
+  color: var(--signup-green-dark);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.ishara-signup-heading h2 {
+  margin: 10px 0 8px;
+  color: var(--signup-text);
+  font-size: 30px;
+  letter-spacing: -0.7px;
+}
+
+.ishara-signup-heading p {
+  margin: 0;
+  color: var(--signup-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.ishara-signup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.ishara-signup-field label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ishara-signup-field input {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid var(--signup-border);
+  border-radius: 11px;
+  outline: none;
+  background: #FBFCFD;
+  color: var(--signup-text);
+  font: inherit;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ishara-signup-field input:focus {
+  border-color: var(--signup-blue-dark);
+  box-shadow: 0 0 0 3px rgba(141, 189, 235, 0.22);
+}
+
+.ishara-signup-field > small {
+  color: var(--signup-muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.ishara-signup-divider {
+  height: 1px;
+  margin: 24px 0;
+  background: #E9EEF1;
+}
+
+.ishara-signup-step-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 17px;
+}
+
+.ishara-step-number {
+  display: grid;
+  place-items: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--signup-green-light);
+  color: var(--signup-green-dark);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.ishara-signup-step-heading h3 {
+  margin: 1px 0 5px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.ishara-signup-step-heading p {
+  margin: 0;
+  color: var(--signup-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.ishara-symbol-options {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.ishara-symbol-option {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  aspect-ratio: 1;
+  padding: 2px;
+  border: 1px solid var(--signup-border);
+  border-radius: 11px;
+  background: #F8FAFB;
+  font-size: clamp(17px, 2vw, 24px);
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.ishara-symbol-option:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--signup-blue-dark);
+  background: var(--signup-blue-light);
+}
+
+.ishara-symbol-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.ishara-sequence-label {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 19px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ishara-sequence-label span {
+  color: var(--signup-blue-dark);
+}
+
+.ishara-selected-sequence {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ishara-sequence-slot {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  height: 51px;
+  border: 1px dashed #C9D6DF;
+  border-radius: 12px;
+  background: #FAFBFC;
+  color: #A5B0B9;
+  font-size: 13px;
+}
+
+.ishara-sequence-slot.is-filled {
+  border: 1px solid #B8DCC9;
+  background: var(--signup-green-light);
+  font-size: 23px;
+}
+
+.ishara-signup-reset,
+.ishara-small-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 35px;
+  padding: 8px 12px;
+  border: 1px solid var(--signup-border);
+  border-radius: 9px;
+  background: white;
+  color: var(--signup-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.ishara-signup-reset {
+  margin-top: 10px;
+}
+
+.ishara-signup-reset:hover:not(:disabled) {
+  border-color: var(--signup-blue-dark);
+  background: var(--signup-blue-light);
+}
+
+.ishara-signup-reset:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.ishara-small-primary {
+  border-color: var(--signup-blue-dark);
+  background: var(--signup-blue-dark);
+  color: white;
+}
+
+.ishara-small-primary:hover {
+  background: var(--signup-blue-deep);
+}
+
+.ishara-dot-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  width: min(100%, 280px);
+  aspect-ratio: 1;
+  margin: 20px auto 12px;
+  padding: 18px;
+  border: 1px solid #E1EAF0;
+  border-radius: 20px;
+  background: #F7FAFC;
+  touch-action: manipulation;
+}
+
+.ishara-dot {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  aspect-ratio: 1;
+  padding: 0;
+  border: 2px solid #C8D8E4;
+  border-radius: 50%;
+  background: #FFFFFF;
+  color: white;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, transform 0.15s;
+}
+
+.ishara-dot:hover:not(:disabled) {
+  transform: scale(1.07);
+  border-color: var(--signup-blue-dark);
+}
+
+.ishara-dot-selected {
+  border-color: var(--signup-blue-dark);
+  background: var(--signup-blue-dark);
+}
+
+.ishara-dot span {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ishara-pattern-status {
+  min-height: 20px;
+  color: var(--signup-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.ishara-pattern-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ishara-pattern-actions .ishara-signup-reset {
+  margin-top: 0;
+}
+
+.ishara-signup-error {
+  margin: 16px 0 0;
+  padding: 11px 13px;
+  border: 1px solid #F2CCCC;
+  border-radius: 10px;
+  background: #FFF5F5;
+  color: #A33333;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.ishara-signup-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 49px;
+  margin-top: 22px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--signup-blue-dark);
+  color: #FFFFFF;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.ishara-signup-submit:hover {
+  transform: translateY(-1px);
+  background: var(--signup-blue-deep);
+}
+
+.ishara-signup-login-link {
+  margin: 20px 0 0;
+  color: var(--signup-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.ishara-signup-login-link a {
+  color: var(--signup-blue-dark);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ishara-signup-login-link a:hover {
+  text-decoration: underline;
+}
+
+.ishara-signup-success {
+  text-align: center;
+}
+
+.ishara-success-icon {
+  display: grid;
+  place-items: center;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: var(--signup-green-light);
+  color: var(--signup-green-dark);
+  font-size: 30px;
+  font-weight: 800;
+}
+
+.ishara-signup-success h3 {
+  margin: 0 0 10px;
+  font-size: 23px;
+}
+
+.ishara-signup-success > p {
+  color: var(--signup-muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.ishara-signup-success .ishara-demo-note {
+  margin-top: 18px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #F4F7F9;
+  text-align: left;
+}
+
+.ishara-signup-success .ishara-signup-reset {
+  width: 100%;
+  margin-top: 12px;
+  min-height: 44px;
+}
+
+@media (max-width: 900px) {
+  .ishara-signup-page {
+    grid-template-columns: 1fr;
+  }
+
+  .ishara-signup-brand {
+    min-height: 300px;
+    padding: 64px 28px 32px;
+  }
+
+  .ishara-signup-brand-content {
+    max-width: 510px;
+  }
+
+  .ishara-signup-brand-content h1 {
+    font-size: 32px;
+  }
+
+  .ishara-signup-brand-content > p {
+    margin-bottom: 20px;
+  }
+
+  .ishara-signup-feature {
+    display: none;
+  }
+
+  .ishara-signup-logo {
+    width: 110px;
+    max-height: 65px;
+  }
+
+  .ishara-signup-mark {
+    display: none;
+  }
+
+  .ishara-signup-form-section {
+    padding: 28px 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ishara-signup-brand {
+    min-height: 250px;
+    padding: 62px 22px 25px;
+  }
+
+  .ishara-signup-back {
+    top: 22px;
+    left: 22px;
+  }
+
+  .ishara-signup-brand-content h1 {
+    font-size: 28px;
+  }
+
+  .ishara-signup-card {
+    padding: 22px 17px;
+    border-radius: 18px;
+  }
+
+  .ishara-signup-heading h2 {
+    font-size: 26px;
+  }
+
+  .ishara-symbol-options {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .ishara-dot-grid {
+    gap: 13px;
+    padding: 14px;
+  }
+}
+
+/* =========================================
+   ISHARA AI - LOGIN PAGE
+   ========================================= */
+
+.ishara-login-page {
+  --login-blue: #8DBDEB;
+  --login-blue-dark: #397DB8;
+  --login-blue-deep: #285D88;
+  --login-blue-light: #EAF4FC;
+  --login-green-light: #EAF7F0;
+  --login-green-dark: #347A59;
+  --login-bg: #F5F7F8;
+  --login-text: #344454;
+  --login-muted: #74818D;
+  --login-border: #DCE4E9;
+
+  display: grid;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(420px, 1.15fr);
+  min-height: 100vh;
+  color: var(--login-text);
+  background: var(--login-bg);
+}
+
+.ishara-login-page *,
+.ishara-login-page *::before,
+.ishara-login-page *::after {
+  box-sizing: border-box;
+}
+
+.ishara-login-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 42px;
+  background: linear-gradient(
+    145deg,
+    #EAF4FC 0%,
+    #DCEEF9 55%,
+    #EAF7F0 100%
+  );
+}
+
+.ishara-login-brand-content {
+  width: 100%;
+  max-width: 390px;
+}
+
+.ishara-login-logo {
+  display: block;
+  width: 150px;
+  max-height: 100px;
+  object-fit: contain;
+  margin-bottom: 28px;
+}
+
+.ishara-login-mark {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(57, 125, 184, 0.15);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 40px;
+}
+
+.ishara-login-brand-content h1 {
+  margin: 0 0 16px;
+  color: var(--login-blue-deep);
+  font-size: clamp(30px, 3vw, 43px);
+  line-height: 1.15;
+  letter-spacing: -1px;
+}
+
+.ishara-login-brand-content > p {
+  margin: 0 0 32px;
+  color: #536D80;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.ishara-login-features {
+  display: flex;
+  gap: 14px;
+  margin-top: 30px;
+}
+
+.ishara-login-features > div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  padding: 15px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.ishara-login-features > div > span {
+  font-size: 26px;
+}
+
+.ishara-login-features small {
+  color: #536D80;
+  font-size: 11px;
+  text-align: center;
+}
+
+.ishara-login-form-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 36px 24px;
+}
+
+.ishara-login-card {
+  width: 100%;
+  max-width: 490px;
+  padding: 34px;
+  border: 1px solid #E7ECEF;
+  border-radius: 24px;
+  background: #FFFFFF;
+  box-shadow: 0 12px 45px rgba(52, 68, 84, 0.07);
+}
+
+.ishara-login-heading {
+  margin-bottom: 28px;
+}
+
+.ishara-login-eyebrow {
+  color: var(--login-green-dark);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.ishara-login-heading h2 {
+  margin: 10px 0 8px;
+  color: var(--login-text);
+  font-size: 30px;
+  letter-spacing: -0.7px;
+}
+
+.ishara-login-heading p {
+  margin: 0;
+  color: var(--login-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.ishara-login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.ishara-login-field label {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ishara-login-field input {
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 14px;
+  border: 1px solid var(--login-border);
+  border-radius: 11px;
+  outline: none;
+  background: #FBFCFD;
+  color: var(--login-text);
+  font: inherit;
+  font-size: 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.ishara-login-field input:focus {
+  border-color: var(--login-blue-dark);
+  box-shadow: 0 0 0 3px rgba(141, 189, 235, 0.22);
+}
+
+.ishara-login-divider {
+  height: 1px;
+  margin: 25px 0;
+  background: #E9EEF1;
+}
+
+.ishara-login-step-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 17px;
+}
+
+.ishara-login-step-number {
+  display: grid;
+  place-items: center;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--login-green-light);
+  color: var(--login-green-dark);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.ishara-login-step-heading h3 {
+  margin: 1px 0 5px;
+  font-size: 15px;
+}
+
+.ishara-login-step-heading p {
+  margin: 0;
+  color: var(--login-muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.ishara-login-symbol-options {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.ishara-login-symbol-option {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  aspect-ratio: 1;
+  padding: 2px;
+  border: 1px solid var(--login-border);
+  border-radius: 11px;
+  background: #F8FAFB;
+  font-size: clamp(17px, 2vw, 24px);
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.ishara-login-symbol-option:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--login-blue-dark);
+  background: var(--login-blue-light);
+}
+
+.ishara-login-symbol-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.ishara-login-sequence-label {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 19px;
+  margin-bottom: 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ishara-login-sequence-label span:last-child {
+  color: var(--login-blue-dark);
+}
+
+.ishara-login-selected-sequence {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.ishara-login-sequence-slot {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  height: 51px;
+  border: 1px dashed #C9D6DF;
+  border-radius: 12px;
+  background: #FAFBFC;
+  color: #A5B0B9;
+  font-size: 13px;
+}
+
+.ishara-login-sequence-slot.is-filled {
+  border: 1px solid #B8DCC9;
+  background: var(--login-green-light);
+  font-size: 23px;
+}
+
+.ishara-login-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.ishara-login-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 35px;
+  padding: 8px 12px;
+  border: 1px solid var(--login-border);
+  border-radius: 9px;
+  background: white;
+  color: var(--login-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ishara-login-secondary:hover:not(:disabled) {
+  border-color: var(--login-blue-dark);
+  background: var(--login-blue-light);
+}
+
+.ishara-login-secondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.ishara-login-error,
+.ishara-login-notice {
+  margin: 16px 0 0;
+  padding: 11px 13px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.ishara-login-error {
+  border: 1px solid #F2CCCC;
+  background: #FFF5F5;
+  color: #A33333;
+}
+
+.ishara-login-notice {
+  border: 1px solid #DCEAF4;
+  background: #F3F8FC;
+  color: #536D80;
+}
+
+.ishara-login-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 49px;
+  margin-top: 22px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--login-blue-dark);
+  color: #FFFFFF;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.ishara-login-submit:hover {
+  transform: translateY(-1px);
+  background: var(--login-blue-deep);
+}
+
+.ishara-login-help {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.ishara-login-text-button {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--login-blue-dark);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ishara-login-text-button:hover {
+  text-decoration: underline;
+}
+
+.ishara-login-help p {
+  margin: 17px 0 0;
+  color: var(--login-muted);
+  font-size: 12px;
+}
+
+.ishara-login-help a {
+  color: var(--login-blue-dark);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ishara-login-help a:hover {
+  text-decoration: underline;
+}
+
+.ishara-tutorial-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 44px;
+  margin-top: 23px;
+  padding: 10px 14px;
+  border: 1px solid #D4E7DB;
+  border-radius: 12px;
+  background: var(--login-green-light);
+  color: var(--login-green-dark);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ishara-tutorial-button:hover {
+  background: #DDF1E6;
+}
+
+.ishara-tutorial-info {
+  margin-top: 12px;
+  padding: 13px;
+  border: 1px solid var(--login-border);
+  border-radius: 11px;
+  background: #FAFBFC;
+  font-size: 12px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.ishara-tutorial-info p {
+  margin: 6px 0 0;
+  color: var(--login-muted);
+}
+
+.ishara-tutorial-info code {
+  overflow-wrap: anywhere;
+}
+
+.ishara-login-security-note {
+  margin: 19px 0 0;
+  color: var(--login-muted);
+  font-size: 11px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.ishara-login-page button:focus-visible,
+.ishara-login-page a:focus-visible {
+  outline: 3px solid var(--login-blue);
+  outline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+  .ishara-login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .ishara-login-brand {
+    padding: 36px 28px;
+  }
+
+  .ishara-login-brand-content {
+    max-width: 490px;
+  }
+
+  .ishara-login-logo {
+    width: 120px;
+    max-height: 75px;
+    margin-bottom: 18px;
+  }
+
+  .ishara-login-mark {
+    display: none;
+  }
+
+  .ishara-login-brand-content h1 {
+    font-size: 32px;
+  }
+
+  .ishara-login-brand-content > p {
+    margin-bottom: 20px;
+  }
+
+  .ishara-login-features {
+    margin-top: 20px;
+  }
+
+  .ishara-login-form-section {
+    padding: 28px 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ishara-login-brand {
+    padding: 28px 22px;
+  }
+
+  .ishara-login-brand-content h1 {
+    font-size: 28px;
+  }
+
+  .ishara-login-card {
+    padding: 22px 17px;
+    border-radius: 18px;
+  }
+
+  .ishara-login-heading h2 {
+    font-size: 26px;
+  }
+
+  .ishara-login-symbol-options {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }

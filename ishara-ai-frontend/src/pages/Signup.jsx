@@ -3,146 +3,412 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import "../App.css";
 
-export default function Signup() {
-  const [name, setName] = useState("");
+const SYMBOLS = [
+  { id: "heart", icon: "❤️", label: "Heart" },
+  { id: "star", icon: "⭐", label: "Star" },
+  { id: "moon", icon: "🌙", label: "Moon" },
+  { id: "sun", icon: "☀️", label: "Sun" },
+  { id: "flower", icon: "🌸", label: "Flower" },
+  { id: "lightning", icon: "⚡", label: "Lightning" },
+  { id: "leaf", icon: "🍃", label: "Leaf" },
+  { id: "rainbow", icon: "🌈", label: "Rainbow" },
+];
+
+const SEQUENCE_LENGTH = 5;
+
+function Signup() {
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [message, setMessage] = useState("");
 
-  function handleSubmit(e) {
-    e.preventDefault();
-    setMessage("");
+  const [symbolStage, setSymbolStage] = useState("create");
+  const [selectedSymbols, setSelectedSymbols] = useState([]);
+  const [confirmedSymbols, setConfirmedSymbols] = useState([]);
 
-    if (password.length < 8) {
-      setMessage("Your password must be at least 8 characters.");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const currentSequence =
+    symbolStage === "create" ? selectedSymbols : confirmedSymbols;
+
+  function selectSymbol(symbol) {
+    setError("");
+    setSuccess(false);
+
+    if (currentSequence.length >= SEQUENCE_LENGTH) return;
+
+    if (symbolStage === "create") {
+      setSelectedSymbols((previous) => [...previous, symbol.id]);
+    } else {
+      setConfirmedSymbols((previous) => [...previous, symbol.id]);
+    }
+  }
+
+  function undoLastSymbol() {
+    if (symbolStage === "create") {
+      setSelectedSymbols((previous) => previous.slice(0, -1));
+    } else {
+      setConfirmedSymbols((previous) => previous.slice(0, -1));
+    }
+
+    setError("");
+  }
+
+  function clearSequence() {
+    if (symbolStage === "create") {
+      setSelectedSymbols([]);
+    } else {
+      setConfirmedSymbols([]);
+    }
+
+    setError("");
+  }
+
+  function beginConfirmation() {
+    if (selectedSymbols.length !== SEQUENCE_LENGTH) {
+      setError("Please select exactly five symbols first.");
       return;
     }
 
-    if (password !== confirmPassword) {
-      setMessage("Your passwords do not match.");
+    setConfirmedSymbols([]);
+    setSymbolStage("confirm");
+    setError("");
+  }
+
+  function goBackToCreate() {
+    setSymbolStage("create");
+    setConfirmedSymbols([]);
+    setError("");
+  }
+
+  function resetForm() {
+    setUsername("");
+    setEmail("");
+    setSelectedSymbols([]);
+    setConfirmedSymbols([]);
+    setSymbolStage("create");
+    setError("");
+    setSuccess(false);
+  }
+
+  function handleSignup(event) {
+    event.preventDefault();
+    setError("");
+    setSuccess(false);
+
+    const cleanUsername = username.trim();
+    const cleanEmail = email.trim();
+
+    if (!/^[a-zA-Z0-9_]{3,30}$/.test(cleanUsername)) {
+      setError(
+        "Username must be 3–30 characters and use only letters, numbers, or underscores."
+      );
+      return;
+    }
+
+    if (
+      cleanEmail.length > 254 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)
+    ) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (selectedSymbols.length !== SEQUENCE_LENGTH) {
+      setError("Please create your five-symbol sequence.");
+      setSymbolStage("create");
+      return;
+    }
+
+    if (confirmedSymbols.length !== SEQUENCE_LENGTH) {
+      setError("Please confirm your five-symbol sequence.");
+      setSymbolStage("confirm");
+      return;
+    }
+
+    const sequencesMatch = selectedSymbols.every(
+      (symbol, index) => symbol === confirmedSymbols[index]
+    );
+
+    if (!sequencesMatch) {
+      setError(
+        "Your symbol sequences do not match. Please try confirming again."
+      );
+      setConfirmedSymbols([]);
+      setSymbolStage("confirm");
       return;
     }
 
     // Frontend demonstration only.
-    // Connect your backend registration API here later.
-    setMessage("Your form is ready. Account creation is not connected to a backend yet.");
+    // No account or authentication secret is saved here.
+    // Real registration must be handled by a secure backend.
+    setSuccess(true);
+  }
+
+  function renderSequence(sequence) {
+    return Array.from({ length: SEQUENCE_LENGTH }, (_, index) => {
+      const symbol = SYMBOLS.find(
+        (item) => item.id === sequence[index]
+      );
+
+      return (
+        <div
+          className={`ishara-sequence-slot ${symbol ? "is-filled" : ""}`}
+          key={index}
+        >
+          {symbol ? (
+            symbol.icon
+          ) : (
+            <span>{index + 1}</span>
+          )}
+        </div>
+      );
+    });
   }
 
   return (
-    <main className="auth-page">
-      <section className="auth-card signup-card">
-        <section className="form-panel signup-form-panel">
-          <div className="auth-form-wrap signup-form-wrap">
-            <h2>Create Your Account</h2>
-            <p className="form-subtitle">
-              Join Ishara AI and be part of an inclusive community.
+    <main className="ishara-signup-page">
+      <section className="ishara-signup-brand">
+        <Link to="/login" className="ishara-signup-back">
+          ← Back to login
+        </Link>
+
+        <div className="ishara-signup-brand-content">
+          <img
+            src="/ishara_logo.png"
+            alt="ISHARA AI logo"
+            className="ishara-signup-logo"
+          />
+
+          <div className="ishara-signup-mark" aria-hidden="true">
+            🤟
+          </div>
+
+          <h1>Welcome to ISHARA AI</h1>
+
+          <p>
+            A more accessible world starts with understanding each other.
+            Create your account and begin your journey.
+          </p>
+
+          <div className="ishara-signup-feature">
+            <span>💬</span>
+            <div>
+              <strong>Communicate</strong>
+              <small>Make communication easier</small>
+            </div>
+          </div>
+
+          <div className="ishara-signup-feature">
+            <span>🤟</span>
+            <div>
+              <strong>Connect</strong>
+              <small>Bring people closer together</small>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="ishara-signup-form-section">
+        <div className="ishara-signup-card">
+          <div className="ishara-signup-heading">
+            <span className="ishara-signup-eyebrow">
+              CREATE YOUR ACCOUNT
+            </span>
+            <h2>Join ISHARA AI</h2>
+            <p>
+              Create your username and use a personal symbol sequence
+              instead of a traditional password.
             </p>
+          </div>
 
-            <form onSubmit={handleSubmit}>
-              <label className="field-label" htmlFor="signup-name"><img src="/icons/user.png" alt="" />
-                Full Name
-              </label>
-              <input
-                id="signup-name"
-                type="text"
-                placeholder="Enter your full name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                autoComplete="name"
-                required
-              />
+          {success ? (
+            <div className="ishara-signup-success" role="status">
+              <div className="ishara-success-icon">✓</div>
+              <h3>Signup checks passed!</h3>
+              <p>
+                Your username, email format, and symbol confirmation
+                passed the frontend checks.
+              </p>
 
-              <label className="field-label" htmlFor="signup-name"><img src="/icons/user.png" alt="" />
-                Email Address
-              </label>
-              <input
-                id="signup-email"
-                type="email"
-                placeholder="Enter your email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
-                required
-              />
+              <p className="ishara-demo-note">
+                This is only a frontend demo. Your account has not been
+                created, your email has not been verified, and your
+                symbol sequence has not been saved. Secure backend
+                integration is required for real registration.
+              </p>
 
-              <label className="field-label" htmlFor="login-password"><img src="/icons/padlock.png" alt="" />
-                Password
-              </label>
-              <div className="password-wrap">
-                <input
-                  id="signup-password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Create a strong password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="new-password"
-                  required
-                />
-                <button
-                  className="password-toggle"
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? "Hide" : "Show"}
-                </button>
-              </div>
+              <Link to="/login" className="ishara-signup-submit">
+                Go to login
+              </Link>
 
-              <label className="field-label" htmlFor="login-password"><img src="/icons/padlock.png" alt="" />
-                Confirm Password
-              </label>
-              <div className="password-wrap">
-                <input
-                  id="signup-confirm"
-                  type={showConfirm ? "text" : "password"}
-                  placeholder="Re-enter your password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  autoComplete="new-password"
-                  required
-                />
-                <button
-                  className="password-toggle"
-                  type="button"
-                  onClick={() => setShowConfirm(!showConfirm)}
-                >
-                  {showConfirm ? "Hide" : "Show"}
-                </button>
-              </div>
-
-              {message && <p className="form-message">{message}</p>}
-
-              <button className="primary-button" type="submit">
-                Create Account <span>→</span>
+              <button
+                type="button"
+                className="ishara-signup-reset"
+                onClick={resetForm}
+              >
+                Test signup again
               </button>
+            </div>
+          ) : (
+            <form onSubmit={handleSignup} noValidate>
+              <div className="ishara-signup-field">
+                <label htmlFor="ishara-username">Username</label>
+                <input
+                  id="ishara-username"
+                  name="username"
+                  type="text"
+                  autoComplete="username"
+                  placeholder="e.g. ishara_user"
+                  value={username}
+                  maxLength={30}
+                  onChange={(event) => {
+                    setUsername(event.target.value);
+                    setError("");
+                  }}
+                  required
+                />
+                <small>
+                  Use 3–30 letters, numbers, or underscores.
+                </small>
+              </div>
+
+              <div className="ishara-signup-field ishara-email-field">
+                <label htmlFor="ishara-email">Email address</label>
+                <input
+                  id="ishara-email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  maxLength={254}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                    setError("");
+                  }}
+                  required
+                />
+                <small>
+                  Your email will be used for account verification and recovery.
+                </small>
+              </div>
+
+              <div className="ishara-signup-divider" />
+
+              <div className="ishara-signup-step-heading">
+                <span className="ishara-step-number">1</span>
+                <div>
+                  <h3>
+                    {symbolStage === "create"
+                      ? "Create your symbol sequence"
+                      : "Confirm your symbol sequence"}
+                  </h3>
+                  <p>
+                    {symbolStage === "create"
+                      ? "Choose five symbols in the order you want to remember."
+                      : "Select the same five symbols in exactly the same order."}
+                  </p>
+                </div>
+              </div>
+
+              <div className="ishara-symbol-options">
+                {SYMBOLS.map((symbol) => (
+                  <button
+                    key={symbol.id}
+                    type="button"
+                    className="ishara-symbol-option"
+                    onClick={() => selectSymbol(symbol)}
+                    disabled={currentSequence.length >= SEQUENCE_LENGTH}
+                    aria-label={`Select ${symbol.label}`}
+                    title={symbol.label}
+                  >
+                    {symbol.icon}
+                  </button>
+                ))}
+              </div>
+
+              <div className="ishara-sequence-label">
+                <span>
+                  {symbolStage === "create"
+                    ? "Your new sequence"
+                    : "Confirm your sequence"}
+                </span>
+                <span>
+                  {currentSequence.length}/{SEQUENCE_LENGTH}
+                </span>
+              </div>
+
+              <div
+                className="ishara-selected-sequence"
+                aria-label="Selected symbol sequence"
+              >
+                {renderSequence(currentSequence)}
+              </div>
+
+              <div className="ishara-pattern-actions">
+                <button
+                  type="button"
+                  className="ishara-signup-reset"
+                  onClick={undoLastSymbol}
+                  disabled={currentSequence.length === 0}
+                >
+                  Undo last
+                </button>
+
+                <button
+                  type="button"
+                  className="ishara-signup-reset"
+                  onClick={clearSequence}
+                  disabled={currentSequence.length === 0}
+                >
+                  Clear
+                </button>
+
+                {symbolStage === "create" ? (
+                  <button
+                    type="button"
+                    className="ishara-small-primary"
+                    onClick={beginConfirmation}
+                    disabled={selectedSymbols.length !== SEQUENCE_LENGTH}
+                  >
+                    Confirm sequence →
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="ishara-signup-reset"
+                    onClick={goBackToCreate}
+                  >
+                    ← Change sequence
+                  </button>
+                )}
+              </div>
+
+              <p className="ishara-signup-security-note">
+                Keep your sequence private. After three failed login
+                attempts, the backend will temporarily block further
+                attempts and require a secure recovery process.
+              </p>
+
+              {error && (
+                <p className="ishara-signup-error" role="alert">
+                  {error}
+                </p>
+              )}
+
+              <button type="submit" className="ishara-signup-submit">
+                Create account
+              </button>
+
+              <p className="ishara-signup-login-link">
+                Already have an account? <Link to="/login">Sign in</Link>
+              </p>
             </form>
-
-            <p className="auth-switch signup-switch">
-              Already have an account? <Link to="/login">Login</Link>
-            </p>
-          </div>
-        </section>
-
-        <aside className="brand-panel signup-brand">
-          <Link to="/login" className="brand-logo centered-logo">
-            <img src="/ishara_logo.png" alt="ISHARA.AI logo" />
-            <span>ISHARA.AI</span>
-          </Link>
-
-          <div className="signup-art" aria-hidden="true">
-            <span className="art-orb orb-four" />
-            <span className="art-orb orb-five" />
-            <span className="hands-symbol signup-hands">🤟</span>
-          </div>
-
-          <div className="signup-brand-copy">
-            <h2>Together for a<br />more inclusive world</h2>
-            <p>Technology that understands everyone.</p>
-          </div>
-        </aside>
+          )}
+        </div>
       </section>
     </main>
   );
 }
+
+export default Signup;
