@@ -82,9 +82,6 @@ function Login() {
             className="ishara-login-logo"
           />
 
-          <div className="ishara-login-mark" aria-hidden="true">
-            🤟
-          </div>
 
           <h1>Communication without barriers.</h1>
 

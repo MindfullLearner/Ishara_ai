@@ -179,9 +179,6 @@ function Signup() {
             className="ishara-signup-logo"
           />
 
-          <div className="ishara-signup-mark" aria-hidden="true">
-            🤟
-          </div>
 
           <h1>Welcome to ISHARA AI</h1>
 
