@@ -1854,3 +1854,28 @@ a:focus-visible {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+/* Signup sequence controls: improved spacing */
+.ishara-pattern-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.ishara-pattern-actions .ishara-signup-reset,
+.ishara-pattern-actions .ishara-small-primary {
+  margin-top: 0;
+}
+
+.ishara-pattern-actions .ishara-small-primary {
+  min-height: 40px;
+  padding: 10px 15px;
+}
+
+/* Add breathing room below the sequence boxes */
+.ishara-selected-sequence {
+  margin-bottom: 4px;
+}

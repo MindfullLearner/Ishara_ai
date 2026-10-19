@@ -306,7 +306,6 @@ async function handleSignup(event) {
               <div className="ishara-signup-divider" />
 
               <div className="ishara-signup-step-heading">
-                <span className="ishara-step-number">1</span>
                 <div>
                   <h3>
                     {symbolStage === "create"
@@ -394,11 +393,6 @@ async function handleSignup(event) {
                 )}
               </div>
 
-              <p className="ishara-signup-security-note">
-                Keep your sequence private. After three failed login
-                attempts, the backend will temporarily block further
-                attempts and require a secure recovery process.
-              </p>
 
               {error && (
                 <p className="ishara-signup-error" role="alert">

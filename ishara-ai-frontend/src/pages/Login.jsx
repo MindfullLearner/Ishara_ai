@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../api/auth";
 import "../App.css";
 
@@ -18,10 +18,13 @@ const SYMBOLS = [
 const SEQUENCE_LENGTH = 5;
 
 function Login() {
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [selectedSymbols, setSelectedSymbols] = useState([]);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [attemptsRemaining, setAttemptsRemaining] = useState(3);
+  const [isLocked, setIsLocked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showTutorialInfo, setShowTutorialInfo] = useState(false);
 
@@ -47,7 +50,8 @@ function Login() {
     setNotice("");
   }
 
-  async function handleLogin(event) {
+  
+async function handleLogin(event) {
     event.preventDefault();
     setError("");
     setNotice("");
@@ -74,15 +78,46 @@ function Login() {
         sequence: selectedSymbols,
       });
 
-      setNotice(
-        `${result.message} Session handling is not set up yet, so you have not been redirected to a private dashboard.`
-      );
+      // Successful login: the API helper has saved the token.
+      setAttemptsRemaining(3);
+      setIsLocked(false);
+
+      navigate("/dashboard", { replace: true });
     } catch (requestError) {
-      setError(requestError.message || "Unable to sign in. Please try again.");
+      const message =
+        requestError.message || "Unable to sign in. Please try again.";
+
+      if (requestError.status === 423) {
+        setAttemptsRemaining(0);
+        setIsLocked(true);
+        setError(
+          "Your account is temporarily locked. Please try again in 15 minutes."
+        );
+      } else if (requestError.status === 401) {
+        setIsLocked(false);
+
+        setAttemptsRemaining((previous) => {
+          const remaining = Math.max(previous - 1, 0);
+
+          setError(
+            remaining > 0
+              ? `Invalid username or symbol sequence. ${remaining} ${
+                  remaining === 1 ? "attempt" : "attempts"
+                } remaining.`
+              : "Invalid username or symbol sequence. Your account may now be locked."
+          );
+
+          return remaining;
+        });
+      } else {
+        setError(message);
+      }
+
     } finally {
       setLoading(false);
     }
   }
+
 
   return (
     <main className="ishara-login-page">

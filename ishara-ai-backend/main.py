@@ -1,5 +1,10 @@
+import os
 
+import jwt
+from dotenv import load_dotenv
+from datetime import datetime, timedelta, timezone
 from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 from pwdlib import PasswordHash
 from sqlalchemy import text
@@ -9,7 +14,37 @@ from sqlalchemy.orm import Session
 from database import SessionLocal, engine
 from models import User
 from schemas import LoginRequest, SignupRequest, UserResponse
-from datetime import datetime, timedelta, timezone
+
+load_dotenv()
+
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+
+if not JWT_SECRET_KEY:
+    raise RuntimeError(
+        "JWT_SECRET_KEY is missing. Check your backend .env file."
+    )
+
+JWT_ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+security = HTTPBearer()
+
+def create_access_token(username: str) -> str:
+    now = datetime.now(timezone.utc)
+
+    payload = {
+        "sub": username,
+        "iat": now,
+        "exp": now + timedelta(
+            minutes=ACCESS_TOKEN_EXPIRE_MINUTES
+        ),
+    }
+
+    return jwt.encode(
+        payload,
+        JWT_SECRET_KEY,
+        algorithm=JWT_ALGORITHM,
+    )
 
 app = FastAPI(
     title="ISHARA AI API",
@@ -178,8 +213,8 @@ def login(
     ):
         user.failed_login_attempts += 1
 
-        if user.failed_login_attempts >= 5:
-            user.failed_login_attempts = 5
+        if user.failed_login_attempts >= 3:
+            user.failed_login_attempts = 3
             user.locked_until = now + timedelta(minutes=15)
 
         db.commit()
@@ -197,8 +232,59 @@ def login(
     user.locked_until = None
     db.commit()
 
+    access_token = create_access_token(user.username)
+
     return {
         "status": "success",
-        "message": "Login credentials verified.",
+        "message": "Login successful.",
         "username": user.username,
+        "access_token": access_token,
+        "token_type": "bearer",
+    }
+
+@app.get("/api/auth/me")
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: Session = Depends(get_db),
+):
+    token = credentials.credentials
+
+    try:
+        payload = jwt.decode(
+            token,
+            JWT_SECRET_KEY,
+            algorithms=[JWT_ALGORITHM],
+        )
+
+        username = payload.get("sub")
+
+        if not username:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authentication token.",
+            )
+
+    except jwt.InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired authentication token.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+    user = (
+        db.query(User)
+        .filter(User.username == username)
+        .first()
+    )
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User account not found.",
+        )
+
+    return {
+        "status": "success",
+        "username": user.username,
+        "email": user.email,
     }
