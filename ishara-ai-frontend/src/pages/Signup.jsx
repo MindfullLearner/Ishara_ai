@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { signupUser } from "../api/auth";
 import "../App.css";
 
 const SYMBOLS = [
@@ -26,6 +27,7 @@ function Signup() {
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const currentSequence =
     symbolStage === "create" ? selectedSymbols : confirmedSymbols;
@@ -90,7 +92,8 @@ function Signup() {
     setSuccess(false);
   }
 
-  function handleSignup(event) {
+  
+async function handleSignup(event) {
     event.preventDefault();
     setError("");
     setSuccess(false);
@@ -138,10 +141,23 @@ function Signup() {
       return;
     }
 
-    // Frontend demonstration only.
-    // No account or authentication secret is saved here.
-    // Real registration must be handled by a secure backend.
-    setSuccess(true);
+    setLoading(true);
+
+    try {
+      await signupUser({
+        username: cleanUsername,
+        email: cleanEmail,
+        sequence: selectedSymbols,
+      });
+
+      setSuccess(true);
+    } catch (requestError) {
+      setError(
+        requestError.message || "Unable to create your account. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   function renderSequence(sequence) {
@@ -221,17 +237,14 @@ function Signup() {
           {success ? (
             <div className="ishara-signup-success" role="status">
               <div className="ishara-success-icon">✓</div>
-              <h3>Signup checks passed!</h3>
+              <h3>Account created successfully!</h3>
               <p>
-                Your username, email format, and symbol confirmation
-                passed the frontend checks.
+                Your account has been saved to the ISHARA AI database.
               </p>
 
               <p className="ishara-demo-note">
-                This is only a frontend demo. Your account has not been
-                created, your email has not been verified, and your
-                symbol sequence has not been saved. Secure backend
-                integration is required for real registration.
+                Email verification is not implemented yet. Your account has been
+                created, but email ownership has not been verified.
               </p>
 
               <Link to="/login" className="ishara-signup-submit">
@@ -393,8 +406,12 @@ function Signup() {
                 </p>
               )}
 
-              <button type="submit" className="ishara-signup-submit">
-                Create account
+              <button
+                type="submit"
+                className="ishara-signup-submit"
+                disabled={loading}
+              >
+                {loading ? "Creating account..." : "Create account"}
               </button>
 
               <p className="ishara-signup-login-link">

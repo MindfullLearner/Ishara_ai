@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { loginUser } from "../api/auth";
 import "../App.css";
 
 const SYMBOLS = [
@@ -21,6 +22,7 @@ function Login() {
   const [selectedSymbols, setSelectedSymbols] = useState([]);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [loading, setLoading] = useState(false);
   const [showTutorialInfo, setShowTutorialInfo] = useState(false);
 
   function selectSymbol(symbol) {
@@ -45,7 +47,7 @@ function Login() {
     setNotice("");
   }
 
-  function handleLogin(event) {
+  async function handleLogin(event) {
     event.preventDefault();
     setError("");
     setNotice("");
@@ -64,12 +66,22 @@ function Login() {
       return;
     }
 
-    // Backend integration will go here.
-    // The server must validate the username and symbol credential,
-    // enforce the three-attempt limit, and check optional verification.
-    setNotice(
-      "The login interface is ready, but account verification is not connected yet. Connect the backend before using real accounts."
-    );
+    setLoading(true);
+
+    try {
+      const result = await loginUser({
+        username: cleanUsername,
+        sequence: selectedSymbols,
+      });
+
+      setNotice(
+        `${result.message} Session handling is not set up yet, so you have not been redirected to a private dashboard.`
+      );
+    } catch (requestError) {
+      setError(requestError.message || "Unable to sign in. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -81,7 +93,6 @@ function Login() {
             alt="ISHARA AI logo"
             className="ishara-login-logo"
           />
-
 
           <h1>Communication without barriers.</h1>
 
@@ -152,7 +163,9 @@ function Login() {
                   type="button"
                   className="ishara-login-symbol-option"
                   onClick={() => selectSymbol(symbol)}
-                  disabled={selectedSymbols.length >= SEQUENCE_LENGTH}
+                  disabled={
+                    loading || selectedSymbols.length >= SEQUENCE_LENGTH
+                  }
                   aria-label={`Select ${symbol.label}`}
                   title={symbol.label}
                 >
@@ -195,7 +208,7 @@ function Login() {
                 type="button"
                 className="ishara-login-secondary"
                 onClick={undoLastSymbol}
-                disabled={selectedSymbols.length === 0}
+                disabled={loading || selectedSymbols.length === 0}
               >
                 Undo last
               </button>
@@ -204,7 +217,7 @@ function Login() {
                 type="button"
                 className="ishara-login-secondary"
                 onClick={clearSequence}
-                disabled={selectedSymbols.length === 0}
+                disabled={loading || selectedSymbols.length === 0}
               >
                 Clear
               </button>
@@ -222,8 +235,12 @@ function Login() {
               </p>
             )}
 
-            <button type="submit" className="ishara-login-submit">
-              Sign in
+            <button
+              type="submit"
+              className="ishara-login-submit"
+              disabled={loading}
+            >
+              {loading ? "Signing in..." : "Sign in"}
             </button>
           </form>
 
@@ -234,7 +251,7 @@ function Login() {
               onClick={() => {
                 setError("");
                 setNotice(
-                  "Account recovery will use your verified email once the backend and email verification service are connected."
+                  "Account recovery is not implemented yet. Email verification and a secure recovery process are still needed."
                 );
               }}
             >
@@ -268,9 +285,8 @@ function Login() {
           )}
 
           <p className="ishara-login-security-note">
-            Keep your symbol sequence private. Three failed login attempts
-            will trigger a temporary server-enforced lockout once
-            authentication is connected.
+            Keep your symbol sequence private. Repeated failed attempts are
+            temporarily blocked by the backend.
           </p>
         </div>
       </section>
