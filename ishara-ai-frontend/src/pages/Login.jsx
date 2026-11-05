@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../api/auth";
 import "../App.css";
@@ -23,8 +23,7 @@ function Login() {
   const [selectedSymbols, setSelectedSymbols] = useState([]);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const [attemptsRemaining, setAttemptsRemaining] = useState(3);
-  const [isLocked, setIsLocked] = useState(false);
+  const attemptsRemaining = useRef(3);
   const [loading, setLoading] = useState(false);
   const [showTutorialInfo, setShowTutorialInfo] = useState(false);
 
@@ -73,14 +72,13 @@ async function handleLogin(event) {
     setLoading(true);
 
     try {
-      const result = await loginUser({
+      await loginUser({
         username: cleanUsername,
         sequence: selectedSymbols,
       });
 
       // Successful login: the API helper has saved the token.
-      setAttemptsRemaining(3);
-      setIsLocked(false);
+      attemptsRemaining.current = 3;
 
       navigate("/dashboard", { replace: true });
     } catch (requestError) {
@@ -88,27 +86,20 @@ async function handleLogin(event) {
         requestError.message || "Unable to sign in. Please try again.";
 
       if (requestError.status === 423) {
-        setAttemptsRemaining(0);
-        setIsLocked(true);
+        attemptsRemaining.current = 0;
         setError(
           "Your account is temporarily locked. Please try again in 15 minutes."
         );
       } else if (requestError.status === 401) {
-        setIsLocked(false);
-
-        setAttemptsRemaining((previous) => {
-          const remaining = Math.max(previous - 1, 0);
-
-          setError(
-            remaining > 0
-              ? `Invalid username or symbol sequence. ${remaining} ${
-                  remaining === 1 ? "attempt" : "attempts"
-                } remaining.`
-              : "Invalid username or symbol sequence. Your account may now be locked."
-          );
-
-          return remaining;
-        });
+        attemptsRemaining.current = Math.max(attemptsRemaining.current - 1, 0);
+        const remaining = attemptsRemaining.current;
+        setError(
+          remaining > 0
+            ? `Invalid username or symbol sequence. ${remaining} ${
+                remaining === 1 ? "attempt" : "attempts"
+              } remaining.`
+            : "Invalid username or symbol sequence. Your account may now be locked."
+        );
       } else {
         setError(message);
       }
@@ -123,18 +114,23 @@ async function handleLogin(event) {
     <main className="ishara-login-page">
       <section className="ishara-login-brand">
         <div className="ishara-login-brand-content">
+          <div className="ishara-auth-wordmark">
+            <strong>ISHARA<span>AI</span></strong>
+            <small>PAKISTAN SIGN LANGUAGE</small>
+          </div>
+
           <img
-            src="/ishara_logo.png"
-            alt="ISHARA AI logo"
-            className="ishara-login-logo"
+            src="/ishara-auth-mascots.svg"
+            alt=""
+            aria-hidden="true"
+            className="ishara-auth-illustration"
           />
 
-          <h1>Communication without barriers.</h1>
-
-          <p>
-            Welcome back to ISHARA AI, where technology helps people
-            understand one another.
-          </p>
+          <div className="ishara-auth-campaign">
+            <span className="ishara-auth-overline">A LANGUAGE OF CONNECTION</span>
+            <h1>Every hand<br />has a story.</h1>
+            <p className="ishara-auth-caption">A little sign. A lot to say.</p>
+          </div>
 
           <div className="ishara-login-features">
             <div>
@@ -161,7 +157,7 @@ async function handleLogin(event) {
             <p>Use your username and personal symbol sequence.</p>
           </div>
 
-          <form onSubmit={handleLogin} noValidate>
+          <form onSubmit={handleLogin} noValidate aria-busy={loading}>
             <div className="ishara-login-field">
               <label htmlFor="ishara-login-username">Username</label>
               <input
@@ -169,6 +165,7 @@ async function handleLogin(event) {
                 name="username"
                 type="text"
                 autoComplete="username"
+                disabled={loading}
                 placeholder="Enter your username"
                 value={username}
                 maxLength={30}
@@ -211,7 +208,7 @@ async function handleLogin(event) {
 
             <div className="ishara-login-sequence-label">
               <span>Selected sequence</span>
-              <span>
+              <span aria-live="polite" aria-atomic="true">
                 {selectedSymbols.length}/{SEQUENCE_LENGTH}
               </span>
             </div>

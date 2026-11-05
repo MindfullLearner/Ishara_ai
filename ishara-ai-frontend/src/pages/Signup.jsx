@@ -189,19 +189,24 @@ async function handleSignup(event) {
         </Link>
 
         <div className="ishara-signup-brand-content">
+          <div className="ishara-auth-wordmark">
+            <strong>ISHARA<span>AI</span></strong>
+            <small>PAKISTAN SIGN LANGUAGE</small>
+          </div>
+
           <img
-            src="/ishara_logo.png"
-            alt="ISHARA AI logo"
-            className="ishara-signup-logo"
+            src="/ishara-auth-mascots.svg"
+            alt=""
+            aria-hidden="true"
+            className="ishara-auth-illustration"
           />
 
 
-          <h1>Welcome to ISHARA AI</h1>
-
-          <p>
-            A more accessible world starts with understanding each other.
-            Create your account and begin your journey.
-          </p>
+          <div className="ishara-auth-campaign">
+            <span className="ishara-auth-overline">YOUR STORY STARTS HERE</span>
+            <h1>Your voice<br />belongs here.</h1>
+            <p className="ishara-auth-caption">Create a place for every conversation.</p>
+          </div>
 
           <div className="ishara-signup-feature">
             <span>💬</span>
@@ -260,7 +265,7 @@ async function handleSignup(event) {
               </button>
             </div>
           ) : (
-            <form onSubmit={handleSignup} noValidate>
+            <form onSubmit={handleSignup} noValidate aria-busy={loading}>
               <div className="ishara-signup-field">
                 <label htmlFor="ishara-username">Username</label>
                 <input
@@ -268,6 +273,7 @@ async function handleSignup(event) {
                   name="username"
                   type="text"
                   autoComplete="username"
+                  disabled={loading}
                   placeholder="e.g. ishara_user"
                   value={username}
                   maxLength={30}
@@ -289,6 +295,7 @@ async function handleSignup(event) {
                   name="email"
                   type="email"
                   autoComplete="email"
+                  disabled={loading}
                   placeholder="you@example.com"
                   value={email}
                   maxLength={254}
@@ -327,7 +334,7 @@ async function handleSignup(event) {
                     type="button"
                     className="ishara-symbol-option"
                     onClick={() => selectSymbol(symbol)}
-                    disabled={currentSequence.length >= SEQUENCE_LENGTH}
+                    disabled={loading || currentSequence.length >= SEQUENCE_LENGTH}
                     aria-label={`Select ${symbol.label}`}
                     title={symbol.label}
                   >
@@ -342,7 +349,7 @@ async function handleSignup(event) {
                     ? "Your new sequence"
                     : "Confirm your sequence"}
                 </span>
-                <span>
+                <span aria-live="polite" aria-atomic="true">
                   {currentSequence.length}/{SEQUENCE_LENGTH}
                 </span>
               </div>
@@ -359,7 +366,7 @@ async function handleSignup(event) {
                   type="button"
                   className="ishara-signup-reset"
                   onClick={undoLastSymbol}
-                  disabled={currentSequence.length === 0}
+                  disabled={loading || currentSequence.length === 0}
                 >
                   Undo last
                 </button>
@@ -368,7 +375,7 @@ async function handleSignup(event) {
                   type="button"
                   className="ishara-signup-reset"
                   onClick={clearSequence}
-                  disabled={currentSequence.length === 0}
+                  disabled={loading || currentSequence.length === 0}
                 >
                   Clear
                 </button>
@@ -378,7 +385,7 @@ async function handleSignup(event) {
                     type="button"
                     className="ishara-small-primary"
                     onClick={beginConfirmation}
-                    disabled={selectedSymbols.length !== SEQUENCE_LENGTH}
+                    disabled={loading || selectedSymbols.length !== SEQUENCE_LENGTH}
                   >
                     Confirm sequence →
                   </button>
@@ -387,6 +394,7 @@ async function handleSignup(event) {
                     type="button"
                     className="ishara-signup-reset"
                     onClick={goBackToCreate}
+                    disabled={loading}
                   >
                     ← Change sequence
                   </button>

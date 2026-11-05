@@ -2,7 +2,7 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 
 /* ========================================
-   ISHARA AI — COLORS & GLOBAL STYLES
+   ISHARA AI Ã¢â‚¬â€ COLORS & GLOBAL STYLES
 ======================================== */
 
 :root {
@@ -739,6 +739,472 @@ a:focus-visible {
   }
 }
 
+/* Auth redesign: bold magenta identity with a hand-drawn brand mark. */
+.ishara-login-page,
+.ishara-signup-page {
+  --auth-pink: #df1672;
+  --auth-cream: #fff7e8;
+  --auth-ink: #252126;
+  --auth-muted: #625c5e;
+  --auth-line: #c9bcb6;
+  --auth-action: #252126;
+  grid-template-columns: minmax(340px, 0.82fr) minmax(480px, 1.18fr);
+  align-items: stretch;
+  min-height: 100vh;
+  background: var(--auth-cream);
+  color: var(--auth-ink);
+  font-family: Inter, "Segoe UI", sans-serif;
+}
+
+.ishara-login-brand,
+.ishara-signup-brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 100vh;
+  padding: 56px clamp(28px, 5vw, 76px);
+  overflow: hidden;
+  background: var(--auth-pink);
+  color: var(--auth-cream);
+}
+
+.ishara-login-brand-content,
+.ishara-signup-brand-content {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 500px);
+  max-width: 500px;
+}
+
+.ishara-login-logo,
+.ishara-signup-logo {
+  width: 126px;
+  max-height: 72px;
+  object-fit: contain;
+  object-position: left center;
+  margin: 0 0 12px;
+  filter: grayscale(1) brightness(0) invert(1);
+}
+
+.ishara-auth-hand {
+  display: block;
+  width: clamp(150px, 19vw, 238px);
+  height: auto;
+  margin: 8px auto 4px;
+  overflow: visible;
+}
+
+.ishara-auth-hand-shadow {
+  fill: var(--auth-cream);
+  opacity: 0.18;
+  transform: translate(9px, 8px);
+}
+
+.ishara-auth-hand-line,
+.ishara-auth-hand-detail {
+  fill: none;
+  stroke: var(--auth-cream);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 5;
+}
+
+.ishara-auth-hand-detail {
+  stroke-width: 3;
+  opacity: 0.78;
+}
+
+.ishara-login-brand-content h1,
+.ishara-signup-brand-content h1 {
+  max-width: 12ch;
+  margin: 12px 0 14px;
+  color: var(--auth-cream);
+  font-size: clamp(38px, 4.5vw, 66px);
+  font-weight: 850;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+
+.ishara-login-brand-content > p,
+.ishara-signup-brand-content > p {
+  max-width: 38ch;
+  margin: 0;
+  color: rgba(255, 247, 232, 0.88);
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.ishara-login-features {
+  display: flex;
+  gap: 22px;
+  margin-top: 28px;
+}
+
+.ishara-login-features > div {
+  flex: initial;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 0;
+  gap: 6px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.ishara-login-features > div > span {
+  font-size: 23px;
+}
+
+.ishara-login-features small,
+.ishara-signup-feature small {
+  color: rgba(255, 247, 232, 0.85);
+  font-size: 12px;
+}
+
+.ishara-signup-back {
+  position: absolute;
+  top: 32px;
+  left: clamp(28px, 5vw, 76px);
+  z-index: 2;
+  color: var(--auth-cream);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.ishara-signup-brand-content {
+  padding-top: 38px;
+}
+
+.ishara-signup-feature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  color: var(--auth-cream);
+}
+
+.ishara-signup-feature > span {
+  font-size: 22px;
+}
+
+.ishara-signup-feature > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ishara-login-form-section,
+.ishara-signup-form-section {
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 56px clamp(24px, 6vw, 96px);
+  background: var(--auth-cream);
+}
+
+.ishara-login-card,
+.ishara-signup-card {
+  width: 100%;
+  max-width: 590px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ishara-login-eyebrow,
+.ishara-signup-eyebrow {
+  color: var(--auth-pink);
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.17em;
+}
+
+.ishara-login-heading,
+.ishara-signup-heading {
+  margin-bottom: 27px;
+}
+
+.ishara-login-heading h2,
+.ishara-signup-heading h2 {
+  margin: 10px 0 8px;
+  color: var(--auth-ink);
+  font-size: clamp(32px, 3vw, 44px);
+  font-weight: 850;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+}
+
+.ishara-login-heading p,
+.ishara-signup-heading p,
+.ishara-signup-step-heading p {
+  color: var(--auth-muted);
+}
+
+.ishara-login-field label,
+.ishara-signup-field label {
+  color: var(--auth-ink);
+  font-size: 13px;
+  font-weight: 750;
+}
+
+.ishara-login-field input,
+.ishara-signup-field input {
+  min-height: 50px;
+  border: 1px solid var(--auth-line);
+  border-radius: 5px;
+  background: #fffdf8;
+  color: var(--auth-ink);
+}
+
+.ishara-login-field input:focus,
+.ishara-signup-field input:focus {
+  border-color: var(--auth-pink);
+  box-shadow: 0 0 0 3px rgba(223, 22, 114, 0.16);
+}
+
+.ishara-signup-field > small,
+.ishara-login-step-heading p,
+.ishara-signup-step-heading p {
+  color: var(--auth-muted);
+}
+
+.ishara-login-divider,
+.ishara-signup-divider {
+  background: #ded2c8;
+}
+
+.ishara-login-step-number,
+.ishara-step-number {
+  border-radius: 50%;
+  background: var(--auth-pink);
+  color: #fff;
+}
+
+.ishara-login-symbol-options,
+.ishara-symbol-options {
+  gap: 8px;
+}
+
+.ishara-login-symbol-option,
+.ishara-symbol-option {
+  border: 1px solid var(--auth-line);
+  border-radius: 5px;
+  background: #fffdf8;
+}
+
+.ishara-login-symbol-option:hover:not(:disabled),
+.ishara-symbol-option:hover:not(:disabled) {
+  border-color: var(--auth-pink);
+  background: #ffe4ee;
+}
+
+.ishara-login-sequence-label,
+.ishara-sequence-label {
+  color: var(--auth-ink);
+}
+
+.ishara-login-sequence-label span:last-child,
+.ishara-sequence-label span:last-child {
+  color: var(--auth-pink);
+}
+
+.ishara-login-sequence-slot,
+.ishara-sequence-slot {
+  border: 1px dashed #bbaea7;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.ishara-login-sequence-slot.is-filled,
+.ishara-sequence-slot.is-filled {
+  border: 1px solid var(--auth-pink);
+  background: #ffe4ee;
+}
+
+.ishara-login-secondary,
+.ishara-signup-reset {
+  border: 1px solid var(--auth-line);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--auth-ink);
+}
+
+.ishara-login-secondary:hover:not(:disabled),
+.ishara-signup-reset:hover:not(:disabled) {
+  border-color: var(--auth-pink);
+  background: #ffe4ee;
+}
+
+.ishara-login-submit,
+.ishara-signup-submit,
+.ishara-small-primary {
+  border: 0;
+  border-radius: 5px;
+  background: var(--auth-action);
+  color: var(--auth-cream);
+  font-weight: 800;
+}
+
+.ishara-login-submit,
+.ishara-signup-submit {
+  min-height: 54px;
+  margin-top: 24px;
+}
+
+.ishara-login-submit:hover:not(:disabled),
+.ishara-signup-submit:hover:not(:disabled),
+.ishara-small-primary:hover:not(:disabled) {
+  background: var(--auth-pink);
+  transform: translateY(-1px);
+}
+
+.ishara-login-text-button,
+.ishara-login-help a,
+.ishara-signup-login-link a {
+  color: #b40e59;
+}
+
+.ishara-login-help p,
+.ishara-login-security-note,
+.ishara-signup-login-link {
+  color: var(--auth-muted);
+}
+
+.ishara-tutorial-button {
+  border: 1px solid var(--auth-line);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--auth-ink);
+}
+
+.ishara-tutorial-button:hover {
+  background: #ffe4ee;
+}
+
+.ishara-dot-grid {
+  border-color: var(--auth-line);
+  border-radius: 5px;
+  background: #fffdf8;
+}
+
+.ishara-dot {
+  border-color: #bbaea7;
+}
+
+.ishara-dot:hover:not(:disabled),
+.ishara-dot-selected {
+  border-color: var(--auth-pink);
+}
+
+.ishara-dot-selected {
+  background: var(--auth-pink);
+}
+
+.ishara-pattern-status {
+  color: var(--auth-muted);
+}
+
+.ishara-signup-success .ishara-demo-note {
+  background: #fff0d6;
+}
+
+.ishara-login-page button:focus-visible,
+.ishara-login-page a:focus-visible,
+.ishara-signup-page button:focus-visible,
+.ishara-signup-page a:focus-visible,
+.ishara-login-page input:focus-visible,
+.ishara-signup-page input:focus-visible {
+  outline: 3px solid #7f1645;
+  outline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+  .ishara-login-page,
+  .ishara-signup-page {
+    grid-template-columns: 1fr;
+  }
+
+  .ishara-login-brand,
+  .ishara-signup-brand {
+    min-height: auto;
+    padding: 42px 28px 34px;
+  }
+
+  .ishara-login-brand-content,
+  .ishara-signup-brand-content {
+    max-width: 620px;
+  }
+
+  .ishara-auth-hand {
+    width: 148px;
+    margin: 2px 0 10px;
+  }
+
+  .ishara-login-brand-content h1,
+  .ishara-signup-brand-content h1 {
+    max-width: 16ch;
+    font-size: clamp(34px, 6vw, 52px);
+  }
+
+  .ishara-login-brand-content > p,
+  .ishara-signup-brand-content > p {
+    max-width: 55ch;
+  }
+
+  .ishara-signup-back {
+    top: 18px;
+    left: 28px;
+  }
+
+  .ishara-signup-brand-content {
+    padding-top: 38px;
+  }
+
+  .ishara-login-form-section,
+  .ishara-signup-form-section {
+    padding: 42px 28px 58px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ishara-login-brand,
+  .ishara-signup-brand {
+    padding: 34px 22px 27px;
+  }
+
+  .ishara-login-brand-content h1,
+  .ishara-signup-brand-content h1 {
+    font-size: 36px;
+  }
+
+  .ishara-login-features {
+    gap: 18px;
+  }
+
+  .ishara-login-form-section,
+  .ishara-signup-form-section {
+    padding: 34px 20px 44px;
+  }
+
+  .ishara-login-heading h2,
+  .ishara-signup-heading h2 {
+    font-size: 31px;
+  }
+
+  .ishara-login-symbol-options,
+  .ishara-symbol-options {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .ishara-pattern-actions {
+    gap: 8px;
+  }
+}
 
 /* =========================================
    ISHARA AI - SIGNUP PAGE
@@ -1878,4 +2344,621 @@ a:focus-visible {
 /* Add breathing room below the sequence boxes */
 .ishara-selected-sequence {
   margin-bottom: 4px;
+}
+
+/* Authentication pages: shared ISHARA teal and navy palette. */
+.ishara-login-page,
+.ishara-signup-page {
+  --login-blue: #0F5C5E;
+  --login-blue-dark: #0F5C5E;
+  --login-blue-deep: #142B3B;
+  --login-blue-light: #E5F3F1;
+  --login-green-light: #E5F3F1;
+  --login-green-dark: #0F5C5E;
+  --login-bg: #F7FAFA;
+  --login-text: #142B3B;
+  --login-muted: #4B5563;
+  --login-border: #66757F;
+
+  --signup-blue: #0F5C5E;
+  --signup-blue-dark: #0F5C5E;
+  --signup-blue-deep: #142B3B;
+  --signup-blue-light: #E5F3F1;
+  --signup-green: #0F5C5E;
+  --signup-green-dark: #0F5C5E;
+  --signup-green-light: #E5F3F1;
+  --signup-bg: #F7FAFA;
+  --signup-text: #142B3B;
+  --signup-muted: #4B5563;
+  --signup-border: #66757F;
+}
+
+.ishara-login-brand,
+.ishara-signup-brand {
+  background: #E5F3F1;
+}
+
+.ishara-login-brand-content h1,
+.ishara-signup-brand-content h1 {
+  color: #142B3B;
+}
+
+.ishara-login-brand-content > p,
+.ishara-login-features small {
+  color: #374151;
+}
+
+.ishara-login-symbol-option,
+.ishara-symbol-option {
+  min-height: 48px;
+  border-color: #66757F;
+}
+
+.ishara-login-secondary,
+.ishara-signup-reset,
+.ishara-small-primary {
+  min-height: 44px;
+}
+
+.ishara-login-field input:focus,
+.ishara-signup-field input:focus {
+  border-color: #0F5C5E;
+  box-shadow: 0 0 0 3px rgba(15, 92, 94, 0.2);
+}
+
+.ishara-login-page button:focus-visible,
+.ishara-login-page a:focus-visible,
+.ishara-signup-page button:focus-visible,
+.ishara-signup-page a:focus-visible {
+  outline: 3px solid #0F5C5E;
+  outline-offset: 3px;
+}
+
+.ishara-login-error,
+.ishara-signup-error {
+  border-color: #B42318;
+  background: #FFF5F5;
+  color: #8F1D14;
+}
+
+.ishara-login-notice {
+  border-color: #0F5C5E;
+  background: #E5F3F1;
+  color: #142B3B;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ishara-login-page *,
+  .ishara-signup-page *,
+  .ishara-login-page *::before,
+  .ishara-signup-page *::before,
+  .ishara-login-page *::after,
+  .ishara-signup-page *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Sunshine Pop authentication theme */
+:root {
+  --ishara-sunshine-yellow: #FFD42A;
+  --ishara-sky-blue: #0879B9;
+  --ishara-coral-red: #E63D35;
+  --ishara-warm-cream: #FFF4D6;
+}
+
+.ishara-login-page,
+.ishara-signup-page {
+  display: grid;
+  grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--ishara-warm-cream);
+  color: #173B50;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+.ishara-login-brand,
+.ishara-signup-brand {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 100%;
+  padding: 48px clamp(28px, 5vw, 72px);
+  overflow: hidden;
+  background: var(--ishara-sunshine-yellow);
+  color: var(--ishara-sky-blue);
+}
+
+.ishara-login-brand-content,
+.ishara-signup-brand-content {
+  width: min(100%, 520px);
+  max-width: 520px;
+}
+
+.ishara-auth-wordmark {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  color: var(--ishara-sky-blue);
+  font-size: clamp(25px, 2.7vw, 34px);
+  font-weight: 1000;
+  letter-spacing: -0.075em;
+}
+
+.ishara-auth-wordmark span {
+  color: var(--ishara-coral-red);
+}
+
+.ishara-auth-wordmark small {
+  flex-basis: 100%;
+  color: var(--ishara-sky-blue);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.ishara-auth-illustration {
+  display: block;
+  width: min(100%, 470px);
+  max-height: min(43vh, 390px);
+  object-fit: contain;
+  margin: 4px auto 0;
+}
+
+.ishara-auth-campaign {
+  position: relative;
+  padding-top: 8px;
+}
+
+.ishara-auth-overline {
+  display: inline-block;
+  margin-bottom: 10px;
+  color: var(--ishara-sky-blue);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.17em;
+}
+
+.ishara-login-brand-content h1,
+.ishara-signup-brand-content h1 {
+  max-width: 12ch;
+  margin: 0;
+  color: var(--ishara-sky-blue);
+  font-size: clamp(48px, 5.2vw, 76px);
+  font-weight: 1000;
+  line-height: 0.92;
+  letter-spacing: -0.075em;
+  text-wrap: balance;
+}
+
+.ishara-auth-caption {
+  display: inline-block;
+  margin: 16px 0 0;
+  padding: 7px 0 0;
+  border-top: 3px solid var(--ishara-coral-red);
+  color: #173B50;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.ishara-login-features,
+.ishara-signup-feature {
+  display: none;
+}
+
+.ishara-signup-back {
+  position: absolute;
+  top: 22px;
+  left: clamp(28px, 5vw, 72px);
+  z-index: 2;
+  color: var(--ishara-sky-blue);
+  font-size: 15px;
+  font-weight: 800;
+  text-underline-offset: 3px;
+}
+
+.ishara-signup-brand-content {
+  padding-top: 22px;
+}
+
+.ishara-login-form-section,
+.ishara-signup-form-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 42px clamp(24px, 5vw, 76px);
+  border-left: 8px solid var(--ishara-sky-blue);
+  background: var(--ishara-warm-cream);
+  color: #173B50;
+}
+
+.ishara-login-card,
+.ishara-signup-card {
+  width: 100%;
+  max-width: 560px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.ishara-login-heading,
+.ishara-signup-heading {
+  margin-bottom: 23px;
+}
+
+.ishara-login-eyebrow,
+.ishara-signup-eyebrow {
+  color: var(--ishara-sky-blue);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+}
+
+.ishara-login-heading h2,
+.ishara-signup-heading h2 {
+  margin: 8px 0 7px;
+  color: var(--ishara-sky-blue);
+  font-size: clamp(32px, 3vw, 43px);
+  font-weight: 1000;
+  line-height: 1;
+  letter-spacing: -0.065em;
+}
+
+.ishara-login-heading p,
+.ishara-signup-heading p,
+.ishara-login-step-heading p,
+.ishara-signup-step-heading p,
+.ishara-signup-field > small,
+.ishara-login-help p,
+.ishara-login-security-note,
+.ishara-signup-login-link,
+.ishara-signup-success p,
+.ishara-tutorial-info p {
+  color: #173B50;
+}
+
+.ishara-login-field label,
+.ishara-signup-field label {
+  color: #173B50;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.ishara-login-field input,
+.ishara-signup-field input {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border: 2px solid var(--ishara-sky-blue);
+  border-radius: 3px;
+  background: var(--ishara-warm-cream);
+  color: #173B50;
+  outline: none;
+}
+
+.ishara-login-field input::placeholder,
+.ishara-signup-field input::placeholder {
+  color: #173B50;
+  opacity: 0.78;
+}
+
+.ishara-login-field input:focus,
+.ishara-signup-field input:focus {
+  border-color: var(--ishara-coral-red);
+  box-shadow: 0 0 0 3px var(--ishara-sunshine-yellow);
+}
+
+.ishara-login-divider,
+.ishara-signup-divider {
+  height: 2px;
+  margin: 19px 0;
+  background: var(--ishara-sky-blue);
+}
+
+.ishara-login-step-number,
+.ishara-step-number {
+  border-radius: 50%;
+  background: var(--ishara-coral-red);
+  color: var(--ishara-warm-cream);
+}
+
+.ishara-login-step-heading h3,
+.ishara-signup-step-heading h3 {
+  margin: 0 0 5px;
+  color: var(--ishara-sky-blue);
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.ishara-login-symbol-options,
+.ishara-symbol-options {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.ishara-login-symbol-option,
+.ishara-symbol-option {
+  min-width: 0;
+  min-height: 54px;
+  aspect-ratio: auto;
+  border: 2px solid var(--ishara-sky-blue);
+  border-radius: 3px;
+  background: var(--ishara-warm-cream);
+  color: #173B50;
+  font-size: 25px;
+  transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+}
+
+.ishara-login-symbol-option:nth-child(3n),
+.ishara-symbol-option:nth-child(3n) {
+  background: var(--ishara-sunshine-yellow);
+}
+
+.ishara-login-symbol-option:hover:not(:disabled),
+.ishara-symbol-option:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--ishara-coral-red);
+  background: var(--ishara-sunshine-yellow);
+}
+
+.ishara-login-symbol-option:disabled,
+.ishara-symbol-option:disabled {
+  cursor: default;
+}
+
+.ishara-login-sequence-label,
+.ishara-sequence-label {
+  margin-top: 16px;
+  color: #173B50;
+  font-weight: 800;
+}
+
+.ishara-login-sequence-label span:last-child,
+.ishara-sequence-label span:last-child {
+  color: var(--ishara-sky-blue);
+  font-weight: 900;
+}
+
+.ishara-login-selected-sequence,
+.ishara-selected-sequence {
+  gap: 8px;
+}
+
+.ishara-login-sequence-slot,
+.ishara-sequence-slot {
+  min-width: 0;
+  min-height: 48px;
+  border: 2px dashed var(--ishara-sky-blue);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--ishara-sky-blue);
+}
+
+.ishara-login-sequence-slot.is-filled,
+.ishara-sequence-slot.is-filled {
+  border: 2px solid var(--ishara-coral-red);
+  background: var(--ishara-sunshine-yellow);
+  color: #173B50;
+}
+
+.ishara-login-secondary,
+.ishara-signup-reset {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 2px solid var(--ishara-sky-blue);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--ishara-sky-blue);
+  font-weight: 800;
+}
+
+.ishara-login-secondary:hover:not(:disabled),
+.ishara-signup-reset:hover:not(:disabled) {
+  border-color: var(--ishara-coral-red);
+  background: var(--ishara-sunshine-yellow);
+}
+
+.ishara-login-submit,
+.ishara-signup-submit,
+.ishara-small-primary {
+  border: 2px solid var(--ishara-coral-red);
+  border-radius: 3px;
+  background: var(--ishara-coral-red);
+  color: var(--ishara-warm-cream);
+  font-size: 19px;
+  font-weight: 900;
+  text-align: center;
+  text-decoration: none;
+}
+
+.ishara-login-submit,
+.ishara-signup-submit {
+  display: block;
+  width: 100%;
+  min-height: 52px;
+  margin-top: 19px;
+  padding: 12px 16px;
+}
+
+.ishara-small-primary {
+  min-height: 40px;
+  padding: 8px 12px;
+}
+
+.ishara-login-submit:hover:not(:disabled),
+.ishara-signup-submit:hover:not(:disabled),
+.ishara-small-primary:hover:not(:disabled) {
+  border-color: var(--ishara-sky-blue);
+  background: var(--ishara-sky-blue);
+  transform: translateY(-1px);
+}
+
+.ishara-login-text-button,
+.ishara-login-help a,
+.ishara-signup-login-link a {
+  color: #173B50;
+  font-weight: 800;
+  text-decoration-color: var(--ishara-sky-blue);
+  text-underline-offset: 3px;
+}
+
+.ishara-tutorial-button {
+  border: 2px solid var(--ishara-sky-blue);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--ishara-sky-blue);
+  font-weight: 800;
+}
+
+.ishara-tutorial-button:hover {
+  background: var(--ishara-sunshine-yellow);
+}
+
+.ishara-tutorial-info {
+  border: 2px solid var(--ishara-sky-blue);
+  border-radius: 3px;
+  background: var(--ishara-warm-cream);
+  color: #173B50;
+}
+
+.ishara-login-error,
+.ishara-signup-error {
+  border: 2px solid var(--ishara-coral-red);
+  border-radius: 3px;
+  background: var(--ishara-warm-cream);
+  color: #173B50;
+  font-weight: 700;
+}
+
+.ishara-login-notice {
+  border: 2px solid var(--ishara-sky-blue);
+  border-radius: 3px;
+  background: var(--ishara-sunshine-yellow);
+  color: #173B50;
+}
+
+.ishara-signup-success .ishara-demo-note {
+  border-left: 4px solid var(--ishara-coral-red);
+  border-radius: 0;
+  background: var(--ishara-sunshine-yellow);
+  color: #173B50;
+}
+
+.ishara-success-icon {
+  border-radius: 50%;
+  background: var(--ishara-coral-red);
+  color: var(--ishara-warm-cream);
+}
+
+.ishara-login-page button:focus-visible,
+.ishara-login-page a:focus-visible,
+.ishara-login-page input:focus-visible,
+.ishara-signup-page button:focus-visible,
+.ishara-signup-page a:focus-visible,
+.ishara-signup-page input:focus-visible {
+  outline: 3px solid var(--ishara-sky-blue);
+  outline-offset: 3px;
+}
+
+@media (max-width: 960px) {
+  .ishara-login-page,
+  .ishara-signup-page {
+    grid-template-columns: 1fr;
+  }
+
+  .ishara-login-brand,
+  .ishara-signup-brand {
+    min-height: auto;
+    padding: 36px clamp(24px, 6vw, 56px) 30px;
+  }
+
+  .ishara-login-brand-content,
+  .ishara-signup-brand-content {
+    width: min(100%, 680px);
+    max-width: 680px;
+  }
+
+  .ishara-auth-illustration {
+    width: min(100%, 430px);
+    max-height: 300px;
+    margin: 2px auto -5px;
+  }
+
+  .ishara-login-brand-content h1,
+  .ishara-signup-brand-content h1 {
+    font-size: clamp(46px, 8vw, 66px);
+  }
+
+  .ishara-signup-back {
+    top: 12px;
+    left: 24px;
+  }
+
+  .ishara-signup-brand-content {
+    padding-top: 28px;
+  }
+
+  .ishara-login-form-section,
+  .ishara-signup-form-section {
+    min-height: auto;
+    padding: 38px clamp(24px, 6vw, 56px) 48px;
+    border-top: 8px solid var(--ishara-sky-blue);
+    border-left: 0;
+  }
+
+  .ishara-login-card,
+  .ishara-signup-card {
+    max-width: 640px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ishara-login-brand,
+  .ishara-signup-brand {
+    padding: 34px 20px 26px;
+  }
+
+  .ishara-auth-illustration {
+    width: min(100%, 350px);
+    max-height: 240px;
+  }
+
+  .ishara-login-brand-content h1,
+  .ishara-signup-brand-content h1 {
+    font-size: clamp(42px, 11vw, 52px);
+  }
+
+  .ishara-signup-back {
+    left: 20px;
+  }
+
+  .ishara-login-form-section,
+  .ishara-signup-form-section {
+    padding: 32px 20px 42px;
+  }
+
+  .ishara-login-heading h2,
+  .ishara-signup-heading h2 {
+    font-size: 32px;
+  }
+
+  .ishara-login-symbol-options,
+  .ishara-symbol-options {
+    gap: 7px;
+  }
+
+  .ishara-login-symbol-option,
+  .ishara-symbol-option {
+    min-height: 50px;
+    font-size: 23px;
+  }
 }
