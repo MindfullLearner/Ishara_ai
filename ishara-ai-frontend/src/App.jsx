@@ -11,6 +11,8 @@ import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminLayout from "./components/admin/AdminLayout";
+import UserManagement from "./pages/admin/UserManagement";
 import { getCurrentUser } from "./api/auth";
 import "./App.css";
 
@@ -99,7 +101,10 @@ function App() {
             </ProtectedRoute>
           }
         />
-        <Route path="/admin" element={<AdminDashboard />} />
+       <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="users" element={<UserManagement />} />
+       </Route>
         <Route
           path="*"
           element={<Navigate to="/login" replace />}
