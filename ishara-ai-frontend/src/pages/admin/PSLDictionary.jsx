@@ -1,6 +1,8 @@
-
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./PSLDictionary.css";
+
+const STORAGE_KEY = "isharaPSLSigns";
 
 const INITIAL_SIGNS = [
   { id: 1, label: "HELLO", category: "Greetings", meaning: "Hello", date: "12 Mar 2026", status: "Reviewed" },
@@ -31,29 +33,51 @@ const INITIAL_SIGNS = [
 
 const FILTERS = ["All", "Greetings", "Food", "Travel", "Draft", "Reviewed"];
 
-const EMPTY_FORM = {
-  label: "",
-  category: "Greetings",
-  meaning: "",
-  status: "Draft",
-};
+function loadSigns() {
+  try {
+    const savedSigns = localStorage.getItem(STORAGE_KEY);
+
+    if (savedSigns) {
+      const parsedSigns = JSON.parse(savedSigns);
+      if (Array.isArray(parsedSigns)) return parsedSigns;
+    }
+  } catch (error) {
+    console.error("Could not load PSL signs:", error);
+  }
+
+  return INITIAL_SIGNS;
+}
+
+function getToday() {
+  return new Date().toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
 
 function PSLDictionary() {
-  const [signs, setSigns] = useState(INITIAL_SIGNS);
+  const navigate = useNavigate();
+
+  const [signs, setSigns] = useState(loadSigns);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [editingSign, setEditingSign] = useState(null);
-  const [formData, setFormData] = useState(EMPTY_FORM);
 
   const entriesPerPage = 7;
 
+  // Save dictionary changes in localStorage.
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(signs));
+  }, [signs]);
+
   const filteredSigns = useMemo(() => {
     return signs.filter((sign) => {
+      const searchText = search.toLowerCase();
+
       const matchesSearch =
-        sign.label.toLowerCase().includes(search.toLowerCase()) ||
-        sign.meaning.toLowerCase().includes(search.toLowerCase());
+        (sign.label || "").toLowerCase().includes(searchText) ||
+        (sign.meaning || "").toLowerCase().includes(searchText);
 
       let matchesFilter = true;
 
@@ -79,64 +103,6 @@ function PSLDictionary() {
     currentPage * entriesPerPage
   );
 
-  const openAddModal = () => {
-    setEditingSign(null);
-    setFormData(EMPTY_FORM);
-    setModalOpen(true);
-  };
-
-  const openEditModal = (sign) => {
-    setEditingSign(sign);
-    setFormData({
-      label: sign.label,
-      category: sign.category,
-      meaning: sign.meaning,
-      status: sign.status,
-    });
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-    setEditingSign(null);
-    setFormData(EMPTY_FORM);
-  };
-
-  const handleFormChange = (event) => {
-    const { name, value } = event.target;
-    setFormData((previous) => ({
-      ...previous,
-      [name]: value,
-    }));
-  };
-
-  const handleSave = (event) => {
-    event.preventDefault();
-
-    if (editingSign) {
-      setSigns((previous) =>
-        previous.map((sign) =>
-          sign.id === editingSign.id
-            ? { ...sign, ...formData, date: "09 Nov 2026" }
-            : sign
-        )
-      );
-    } else {
-      const newSign = {
-        id: Date.now(),
-        ...formData,
-        date: "09 Nov 2026",
-      };
-
-      setSigns((previous) => [newSign, ...previous]);
-      setCurrentPage(1);
-      setActiveFilter("All");
-      setSearch("");
-    }
-
-    closeModal();
-  };
-
   const handleStatusUpdate = (id) => {
     setSigns((previous) =>
       previous.map((sign) =>
@@ -144,7 +110,7 @@ function PSLDictionary() {
           ? {
               ...sign,
               status: sign.status === "Reviewed" ? "Draft" : "Reviewed",
-              date: "09 Nov 2026",
+              date: getToday(),
             }
           : sign
       )
@@ -158,10 +124,36 @@ function PSLDictionary() {
 
     if (!confirmed) return;
 
-    setSigns((previous) => previous.filter((sign) => sign.id !== id));
-    setCurrentPage((page) =>
-      Math.min(page, Math.max(1, Math.ceil((filteredSigns.length - 1) / entriesPerPage)))
+    const updatedSigns = signs.filter((sign) => sign.id !== id);
+
+    setSigns(updatedSigns);
+
+    const remainingFilteredCount = updatedSigns.filter((sign) => {
+      const searchText = search.toLowerCase();
+
+      const matchesSearch =
+        (sign.label || "").toLowerCase().includes(searchText) ||
+        (sign.meaning || "").toLowerCase().includes(searchText);
+
+      let matchesFilter = true;
+
+      if (activeFilter === "Food") {
+        matchesFilter = sign.category === "Food & drink";
+      } else if (activeFilter === "Draft" || activeFilter === "Reviewed") {
+        matchesFilter = sign.status === activeFilter;
+      } else if (activeFilter !== "All") {
+        matchesFilter = sign.category === activeFilter;
+      }
+
+      return matchesSearch && matchesFilter;
+    }).length;
+
+    const newTotalPages = Math.max(
+      1,
+      Math.ceil(remainingFilteredCount / entriesPerPage)
     );
+
+    setCurrentPage((page) => Math.min(page, newTotalPages));
   };
 
   const handleFilterChange = (filter) => {
@@ -181,11 +173,14 @@ function PSLDictionary() {
           <h1>PSL sign dictionary</h1>
           <p>
             Manage approved signs, glosses, video references and review
-            status. - Example data
+            status.
           </p>
         </div>
 
-        <button className="psl-primary-btn" onClick={openAddModal}>
+        <button
+          className="psl-primary-btn"
+          onClick={() => navigate("/admin/psl-dictionary/add")}
+        >
           + Add sign entry
         </button>
       </div>
@@ -238,7 +233,11 @@ function PSLDictionary() {
                     <td>{sign.date}</td>
                     <td>
                       <span
-                        className={`psl-status-badge ${sign.status.toLowerCase()}`}
+                        className={`psl-status-badge ${
+                          sign.status.toLowerCase().startsWith("draft")
+                            ? "draft"
+                            : "reviewed"
+                        }`}
                       >
                         {sign.status}
                       </span>
@@ -247,16 +246,20 @@ function PSLDictionary() {
                       <div className="psl-action-buttons">
                         <button
                           className="psl-action-btn"
-                          onClick={() => openEditModal(sign)}
+                          onClick={() =>
+                            navigate(`/admin/psl-dictionary/edit/${sign.id}`)
+                          }
                         >
                           Edit
                         </button>
+
                         <button
                           className="psl-action-btn"
                           onClick={() => handleStatusUpdate(sign.id)}
                         >
                           Update
                         </button>
+
                         <button
                           className="psl-action-btn delete"
                           onClick={() => handleDelete(sign.id)}
@@ -280,7 +283,10 @@ function PSLDictionary() {
 
         <div className="psl-table-footer">
           <span>
-            Showing {filteredSigns.length === 0 ? 0 : (currentPage - 1) * entriesPerPage + 1}
+            Showing{" "}
+            {filteredSigns.length === 0
+              ? 0
+              : (currentPage - 1) * entriesPerPage + 1}
             –
             {Math.min(currentPage * entriesPerPage, filteredSigns.length)} of{" "}
             {filteredSigns.length} entries
@@ -320,83 +326,6 @@ function PSLDictionary() {
         <span className="psl-note-dot"></span>
         Example data · Media pending validated asset
       </div>
-
-      {modalOpen && (
-        <div className="psl-modal-overlay" onClick={closeModal}>
-          <div
-            className="psl-modal"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="psl-modal-heading">
-              <h2>{editingSign ? "Edit sign entry" : "Add sign entry"}</h2>
-              <button type="button" onClick={closeModal}>
-                ×
-              </button>
-            </div>
-
-            <form onSubmit={handleSave}>
-              <label htmlFor="sign-label">Sign label</label>
-              <input
-                id="sign-label"
-                name="label"
-                value={formData.label}
-                onChange={handleFormChange}
-                placeholder="e.g. HELLO"
-                required
-              />
-
-              <label htmlFor="sign-meaning">English meaning</label>
-              <input
-                id="sign-meaning"
-                name="meaning"
-                value={formData.meaning}
-                onChange={handleFormChange}
-                placeholder="Enter English meaning"
-                required
-              />
-
-              <label htmlFor="sign-category">Category</label>
-              <select
-                id="sign-category"
-                name="category"
-                value={formData.category}
-                onChange={handleFormChange}
-              >
-                <option>Greetings</option>
-                <option>Food & drink</option>
-                <option>Travel</option>
-                <option>Social</option>
-                <option>Health</option>
-                <option>Education</option>
-              </select>
-
-              <label htmlFor="sign-status">Review status</label>
-              <select
-                id="sign-status"
-                name="status"
-                value={formData.status}
-                onChange={handleFormChange}
-              >
-                <option>Draft</option>
-                <option>Reviewed</option>
-              </select>
-
-              <div className="psl-modal-actions">
-                <button
-                  type="button"
-                  className="psl-cancel-btn"
-                  onClick={closeModal}
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="psl-primary-btn">
-                  Save entry
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

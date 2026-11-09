@@ -16,6 +16,8 @@ import UserManagement from "./pages/admin/UserManagement";
 import AddUser from "./pages/admin/AddUser";
 import EditUser from "./pages/admin/EditUser";
 import PSLDictionary from "./pages/admin/PSLDictionary";
+import AddPSLSign from "./pages/admin/AddPSLSign";
+import EditPSLSign from "./pages/admin/EditPSLSign";
 import KnowledgeBase from "./pages/admin/KnowledgeBase";
 import AddArticle from "./pages/admin/AddArticle";
 import EditArticle from "./pages/admin/EditArticle";
@@ -114,6 +116,8 @@ function App() {
           <Route path="users/add" element={<AddUser />} />
           <Route path="users/edit/:userId" element={<EditUser />}/>
           <Route path="psl-dictionary" element={<PSLDictionary />} />
+          <Route path="psl-dictionary/add" element={<AddPSLSign />} />
+          <Route path="psl-dictionary/edit/:signId" element={<EditPSLSign />} />
           <Route path="knowledge-base" element={<KnowledgeBase />} />
           <Route path="knowledge-base/add" element={<AddArticle />} />
           <Route path="knowledge-base/edit/:articleId" element={<EditArticle />} />
