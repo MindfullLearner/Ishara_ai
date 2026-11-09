@@ -16,6 +16,7 @@ import UserManagement from "./pages/admin/UserManagement";
 import AddUser from "./pages/admin/AddUser";
 import EditUser from "./pages/admin/EditUser";
 import PSLDictionary from "./pages/admin/PSLDictionary";
+import KnowledgeBase from "./pages/admin/KnowledgeBase";
 
 import { getCurrentUser } from "./api/auth";
 import "./App.css";
@@ -110,6 +111,7 @@ function App() {
           <Route path="users" element={<UserManagement />} />
           <Route path="users/add" element={<AddUser />} />
           <Route path="psl-dictionary" element={<PSLDictionary />} />
+          <Route path="knowledge-base" element={<KnowledgeBase />} />
           <Route
             path="users/edit/:userId"
             element={<EditUser />}
