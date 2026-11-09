@@ -14,6 +14,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminLayout from "./components/admin/AdminLayout";
 import UserManagement from "./pages/admin/UserManagement";
 import AddUser from "./pages/admin/AddUser";
+import EditUser from "./pages/admin/EditUser";
 import { getCurrentUser } from "./api/auth";
 import "./App.css";
 
@@ -106,6 +107,7 @@ function App() {
         <Route index element={<AdminDashboard />} />
         <Route path="users" element={<UserManagement />} />
         <Route path="users/add" element={<AddUser />} />
+        <Route path="/admin/users/edit/:userId" element={<EditUser />} />
        </Route>
         <Route
           path="*"

@@ -197,7 +197,7 @@ function UserManagement() {
 
                         <button
                           onClick={() =>
-                            navigate(`/admin/users/edit/${user.id}`)
+                           navigate(`/admin/users/edit/${user.id}`)
                           }
                         >
                           Manage
