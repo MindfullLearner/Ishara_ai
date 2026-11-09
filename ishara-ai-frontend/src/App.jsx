@@ -15,6 +15,8 @@ import AdminLayout from "./components/admin/AdminLayout";
 import UserManagement from "./pages/admin/UserManagement";
 import AddUser from "./pages/admin/AddUser";
 import EditUser from "./pages/admin/EditUser";
+import PSLDictionary from "./pages/admin/PSLDictionary";
+
 import { getCurrentUser } from "./api/auth";
 import "./App.css";
 
@@ -94,7 +96,6 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
-
         <Route
           path="/dashboard"
           element={
@@ -103,12 +104,18 @@ function App() {
             </ProtectedRoute>
           }
         />
-       <Route path="/admin" element={<AdminLayout />}>
-        <Route index element={<AdminDashboard />} />
-        <Route path="users" element={<UserManagement />} />
-        <Route path="users/add" element={<AddUser />} />
-        <Route path="/admin/users/edit/:userId" element={<EditUser />} />
-       </Route>
+
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="users" element={<UserManagement />} />
+          <Route path="users/add" element={<AddUser />} />
+          <Route path="psl-dictionary" element={<PSLDictionary />} />
+          <Route
+            path="users/edit/:userId"
+            element={<EditUser />}
+          />
+        </Route>
+
         <Route
           path="*"
           element={<Navigate to="/login" replace />}

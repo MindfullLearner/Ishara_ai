@@ -4,7 +4,7 @@ function AdminSidebar() {
   const menuItems = [
     { label: "Overview", path: "/admin" },
     { label: "Users", path: "/admin/users" },
-    { label: "PSL dictionary", path: "/admin/dictionary" },
+    { label: "PSL dictionary", path: "/admin/psl-dictionary" },
     { label: "Knowledge base", path: "/admin/knowledge" },
     { label: "System logs", path: "/admin/logs" },
     { label: "Processing activity", path: "/admin/activity" },
