@@ -21,6 +21,7 @@ import EditPSLSign from "./pages/admin/EditPSLSign";
 import KnowledgeBase from "./pages/admin/KnowledgeBase";
 import AddArticle from "./pages/admin/AddArticle";
 import EditArticle from "./pages/admin/EditArticle";
+import SystemLogs from "./pages/admin/SystemLogs";
 
 import { getCurrentUser } from "./api/auth";
 import "./App.css";
@@ -121,7 +122,7 @@ function App() {
           <Route path="knowledge-base" element={<KnowledgeBase />} />
           <Route path="knowledge-base/add" element={<AddArticle />} />
           <Route path="knowledge-base/edit/:articleId" element={<EditArticle />} />
-          
+          <Route path="system-logs" element={<SystemLogs />} />
         </Route>
 
         <Route

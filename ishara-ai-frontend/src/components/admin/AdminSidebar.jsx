@@ -6,7 +6,7 @@ function AdminSidebar() {
     { label: "Users", path: "/admin/users" },
     { label: "PSL dictionary", path: "/admin/psl-dictionary" },
     { label: "Knowledge base", path: "/admin/knowledge-base" },
-    { label: "System logs", path: "/admin/logs" },
+    { label: "System logs", path: "/admin/system-logs" },
     { label: "Processing activity", path: "/admin/activity" },
     { label: "Profile & settings", path: "/admin/settings" },
   ];
