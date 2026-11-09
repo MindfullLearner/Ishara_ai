@@ -10,6 +10,7 @@ import {
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 import { getCurrentUser } from "./api/auth";
 import "./App.css";
 
@@ -89,6 +90,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
 
+
         <Route
           path="/dashboard"
           element={
@@ -97,7 +99,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+        <Route path="/admin" element={<AdminDashboard />} />
         <Route
           path="*"
           element={<Navigate to="/login" replace />}
