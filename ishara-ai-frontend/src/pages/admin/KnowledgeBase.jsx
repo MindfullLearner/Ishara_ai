@@ -1,6 +1,9 @@
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./KnowledgeBase.css";
+
+const STORAGE_KEY = "isharaKnowledgeArticles";
 
 const INITIAL_ARTICLES = [
   {
@@ -71,7 +74,8 @@ const INITIAL_ARTICLES = [
     category: "Recording",
     date: "22 Feb 2026",
     status: "Draft",
-    description: "Recommended video quality and recording conditions for sign references.",
+    description:
+      "Recommended video quality and recording conditions for sign references.",
   },
   {
     id: 9,
@@ -87,7 +91,8 @@ const INITIAL_ARTICLES = [
     category: "Translation",
     date: "18 Feb 2026",
     status: "Draft",
-    description: "Answers to frequently asked questions about PSL translation.",
+    description:
+      "Answers to frequently asked questions about PSL translation.",
   },
   {
     id: 11,
@@ -95,7 +100,8 @@ const INITIAL_ARTICLES = [
     category: "Support",
     date: "15 Feb 2026",
     status: "Published",
-    description: "Steps for reporting technical problems to the platform team.",
+    description:
+      "Steps for reporting technical problems to the platform team.",
   },
   {
     id: 12,
@@ -103,7 +109,8 @@ const INITIAL_ARTICLES = [
     category: "PSL dictionary",
     date: "12 Feb 2026",
     status: "Published",
-    description: "Guidelines for reviewing and approving dictionary entries.",
+    description:
+      "Guidelines for reviewing and approving dictionary entries.",
   },
 ];
 
@@ -114,40 +121,57 @@ const CATEGORIES = [
   "Policy",
   "Support",
   "PSL dictionary",
+  "Video guidance",
 ];
 
 const STATUSES = ["All statuses", "Published", "Draft"];
 
-const EMPTY_FORM = {
-  title: "",
-  category: "Translation",
-  status: "Draft",
-  description: "",
-};
+function loadArticles() {
+  try {
+    const savedArticles = localStorage.getItem(STORAGE_KEY);
+
+    if (savedArticles !== null) {
+      const parsedArticles = JSON.parse(savedArticles);
+
+      if (Array.isArray(parsedArticles)) {
+        return parsedArticles;
+      }
+    }
+  } catch (error) {
+    console.error("Unable to load knowledge-base articles:", error);
+  }
+
+  return INITIAL_ARTICLES;
+}
 
 function KnowledgeBase() {
-  const [articles, setArticles] = useState(INITIAL_ARTICLES);
+  const navigate = useNavigate();
+
+  const [articles, setArticles] = useState(loadArticles);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All categories");
   const [status, setStatus] = useState("All statuses");
   const [sortOrder, setSortOrder] = useState("recent");
   const [currentPage, setCurrentPage] = useState(1);
-
-  const [modalOpen, setModalOpen] = useState(false);
   const [manageArticle, setManageArticle] = useState(null);
-  const [editingArticle, setEditingArticle] = useState(null);
-  const [formData, setFormData] = useState(EMPTY_FORM);
 
   const articlesPerPage = 6;
+
+  // Save article changes to localStorage.
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(articles));
+  }, [articles]);
 
   const filteredArticles = useMemo(() => {
     const result = articles.filter((article) => {
       const searchText = search.toLowerCase();
 
       const matchesSearch =
-        article.title.toLowerCase().includes(searchText) ||
-        article.category.toLowerCase().includes(searchText) ||
-        article.description.toLowerCase().includes(searchText);
+        article.title?.toLowerCase().includes(searchText) ||
+        article.category?.toLowerCase().includes(searchText) ||
+        article.description?.toLowerCase().includes(searchText) ||
+        article.summary?.toLowerCase().includes(searchText) ||
+        article.body?.toLowerCase().includes(searchText);
 
       const matchesCategory =
         category === "All categories" || article.category === category;
@@ -181,78 +205,20 @@ function KnowledgeBase() {
     currentPage * articlesPerPage
   );
 
-  const resetPage = () => setCurrentPage(1);
-
-  const openAddModal = () => {
-    setEditingArticle(null);
-    setFormData(EMPTY_FORM);
-    setModalOpen(true);
-  };
-
-  const openEditModal = (article) => {
-    setEditingArticle(article);
-    setFormData({
-      title: article.title,
-      category: article.category,
-      status: article.status,
-      description: article.description,
-    });
-    setManageArticle(null);
-    setModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalOpen(false);
-    setEditingArticle(null);
-    setFormData(EMPTY_FORM);
-  };
-
-  const handleFormChange = (event) => {
-    const { name, value } = event.target;
-
-    setFormData((previous) => ({
-      ...previous,
-      [name]: value,
-    }));
-  };
-
-  const handleSave = (event) => {
-    event.preventDefault();
-
-    if (editingArticle) {
-      setArticles((previous) =>
-        previous.map((article) =>
-          article.id === editingArticle.id
-            ? { ...article, ...formData, date: "09 Nov 2026" }
-            : article
-        )
-      );
-    } else {
-      const newArticle = {
-        id: Date.now(),
-        ...formData,
-        date: "09 Nov 2026",
-      };
-
-      setArticles((previous) => [newArticle, ...previous]);
-      setCategory("All categories");
-      setStatus("All statuses");
-      setSearch("");
-    }
-
-    resetPage();
-    closeModal();
-  };
-
   const handleStatusChange = (article) => {
+    const newStatus =
+      article.status === "Published" ? "Draft" : "Published";
+
+    const now = new Date().toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+
     setArticles((previous) =>
       previous.map((item) =>
         item.id === article.id
-          ? {
-              ...item,
-              status: item.status === "Published" ? "Draft" : "Published",
-              date: "09 Nov 2026",
-            }
+          ? { ...item, status: newStatus, date: now }
           : item
       )
     );
@@ -267,40 +233,39 @@ function KnowledgeBase() {
 
     if (!confirmed) return;
 
-    const remainingCount = filteredArticles.length - 1;
-
-    setArticles((previous) =>
-      previous.filter((article) => article.id !== id)
+    const updatedArticles = articles.filter(
+      (article) => article.id !== id
     );
 
-    setCurrentPage((page) =>
-      Math.min(
-        page,
-        Math.max(1, Math.ceil(remainingCount / articlesPerPage))
-      )
-    );
-
+    setArticles(updatedArticles);
     setManageArticle(null);
+
+    const newTotalPages = Math.max(
+      1,
+      Math.ceil(updatedArticles.length / articlesPerPage)
+    );
+
+    setCurrentPage((page) => Math.min(page, newTotalPages));
   };
 
   const handleSearch = (event) => {
     setSearch(event.target.value);
-    resetPage();
+    setCurrentPage(1);
   };
 
   const handleCategory = (event) => {
     setCategory(event.target.value);
-    resetPage();
+    setCurrentPage(1);
   };
 
   const handleStatus = (event) => {
     setStatus(event.target.value);
-    resetPage();
+    setCurrentPage(1);
   };
 
   const handleSort = (event) => {
     setSortOrder(event.target.value);
-    resetPage();
+    setCurrentPage(1);
   };
 
   return (
@@ -309,8 +274,7 @@ function KnowledgeBase() {
         <div>
           <h1>Knowledge base</h1>
           <p>
-            Maintain trusted learning resources and platform guidance. -
-            Example data
+            Maintain trusted learning resources and platform guidance.
           </p>
         </div>
       </div>
@@ -318,6 +282,7 @@ function KnowledgeBase() {
       <div className="knowledge-toolbar">
         <div className="knowledge-search">
           <span>⌕</span>
+
           <input
             type="text"
             placeholder="Search articles, categories, or keywords"
@@ -352,14 +317,14 @@ function KnowledgeBase() {
 
         <button
           className="knowledge-add-btn"
-          onClick={openAddModal}
+          onClick={() => navigate("/admin/knowledge-base/add")}
         >
           + Add article
         </button>
       </div>
 
       <div className="knowledge-list-info">
-        <span>{filteredArticles.length} articles · Example data</span>
+        <span>{filteredArticles.length} articles</span>
 
         <select
           value={sortOrder}
@@ -384,6 +349,7 @@ function KnowledgeBase() {
                   <span className="knowledge-category">
                     {article.category}
                   </span>
+
                   <span>Updated {article.date}</span>
                 </div>
               </div>
@@ -397,7 +363,11 @@ function KnowledgeBase() {
 
                 <button
                   className="knowledge-action-btn edit"
-                  onClick={() => openEditModal(article)}
+                  onClick={() =>
+                    navigate(
+                      `/admin/knowledge-base/edit/${article.id}`
+                    )
+                  }
                 >
                   <span>✎</span> Edit
                 </button>
@@ -420,10 +390,16 @@ function KnowledgeBase() {
 
       <div className="knowledge-footer">
         <span>
-          Showing {filteredArticles.length === 0 ? 0 : (currentPage - 1) * articlesPerPage + 1}
-          –
-          {Math.min(currentPage * articlesPerPage, filteredArticles.length)} of{" "}
-          {filteredArticles.length} articles
+          Showing{" "}
+          {filteredArticles.length === 0
+            ? 0
+            : (currentPage - 1) * articlesPerPage + 1}
+          {" – "}
+          {Math.min(
+            currentPage * articlesPerPage,
+            filteredArticles.length
+          )}{" "}
+          of {filteredArticles.length} articles
         </span>
 
         <div className="knowledge-pagination">
@@ -434,7 +410,10 @@ function KnowledgeBase() {
             ‹
           </button>
 
-          {Array.from({ length: totalPages }, (_, index) => index + 1)
+          {Array.from(
+            { length: totalPages },
+            (_, index) => index + 1
+          )
             .slice(0, 5)
             .map((page) => (
               <button
@@ -455,84 +434,6 @@ function KnowledgeBase() {
         </div>
       </div>
 
-      {modalOpen && (
-        <div className="knowledge-modal-overlay" onClick={closeModal}>
-          <div
-            className="knowledge-modal"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="knowledge-modal-heading">
-              <h2>{editingArticle ? "Edit article" : "Add article"}</h2>
-              <button type="button" onClick={closeModal}>
-                ×
-              </button>
-            </div>
-
-            <form onSubmit={handleSave}>
-              <label htmlFor="article-title">Article title</label>
-              <input
-                id="article-title"
-                name="title"
-                value={formData.title}
-                onChange={handleFormChange}
-                placeholder="Enter article title"
-                required
-              />
-
-              <label htmlFor="article-category">Category</label>
-              <select
-                id="article-category"
-                name="category"
-                value={formData.category}
-                onChange={handleFormChange}
-              >
-                {CATEGORIES.slice(1).map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-
-              <label htmlFor="article-status">Status</label>
-              <select
-                id="article-status"
-                name="status"
-                value={formData.status}
-                onChange={handleFormChange}
-              >
-                <option value="Draft">Draft</option>
-                <option value="Published">Published</option>
-              </select>
-
-              <label htmlFor="article-description">Article content</label>
-              <textarea
-                id="article-description"
-                name="description"
-                value={formData.description}
-                onChange={handleFormChange}
-                placeholder="Write your article content..."
-                rows="5"
-                required
-              />
-
-              <div className="knowledge-modal-actions">
-                <button
-                  type="button"
-                  className="knowledge-cancel-btn"
-                  onClick={closeModal}
-                >
-                  Cancel
-                </button>
-
-                <button type="submit" className="knowledge-add-btn">
-                  Save article
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
       {manageArticle && (
         <div
           className="knowledge-modal-overlay"
@@ -544,6 +445,7 @@ function KnowledgeBase() {
           >
             <div className="knowledge-modal-heading">
               <h2>Manage article</h2>
+
               <button
                 type="button"
                 onClick={() => setManageArticle(null)}
@@ -553,12 +455,16 @@ function KnowledgeBase() {
             </div>
 
             <h3>{manageArticle.title}</h3>
-            <p>{manageArticle.description}</p>
+
+            <p>
+              {manageArticle.summary || manageArticle.description}
+            </p>
 
             <div className="knowledge-manage-details">
               <span>Category: {manageArticle.category}</span>
               <span>Status: {manageArticle.status}</span>
               <span>Updated: {manageArticle.date}</span>
+              <span>Article ID: KB-00{manageArticle.id}</span>
             </div>
 
             <div className="knowledge-modal-actions">
@@ -580,7 +486,11 @@ function KnowledgeBase() {
 
               <button
                 className="knowledge-add-btn"
-                onClick={() => openEditModal(manageArticle)}
+                onClick={() =>
+                  navigate(
+                    `/admin/knowledge-base/edit/${manageArticle.id}`
+                  )
+                }
               >
                 Edit article
               </button>
