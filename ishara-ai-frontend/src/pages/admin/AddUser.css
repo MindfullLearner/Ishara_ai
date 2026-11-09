@@ -1,0 +1,283 @@
+
+.add-user-page {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  color: #303b43;
+}
+
+.add-user-breadcrumb {
+  margin-bottom: 12px;
+}
+
+.add-user-breadcrumb a {
+  text-decoration: none;
+  color: #0786b2;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.add-user-heading {
+  margin-bottom: 22px;
+}
+
+.add-user-heading h1 {
+  font-size: 23px;
+  margin: 0 0 6px;
+  color: #303b43;
+}
+
+.add-user-heading p {
+  font-size: 11px;
+  color: #78838a;
+  font-weight: 600;
+  margin: 0;
+}
+
+.add-user-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(230px, 0.9fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.add-user-card {
+  background: #ffffff;
+  border: 1px solid #e9e4dc;
+  border-radius: 12px;
+  padding: 22px;
+}
+
+.add-user-card h3 {
+  font-size: 13px;
+  margin: 0 0 9px;
+  color: #303b43;
+}
+
+.add-user-description {
+  font-size: 10px;
+  color: #78838a;
+  margin: 0 0 20px;
+  line-height: 1.6;
+}
+
+.add-user-field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  min-width: 0;
+}
+
+.add-user-field label {
+  font-size: 10px;
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+
+.add-user-field input,
+.add-user-field select {
+  width: 100%;
+  height: 39px;
+  padding: 0 11px;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #e9e4dc;
+  border-radius: 7px;
+  outline: none;
+  color: #303b43;
+  font-size: 11px;
+  font-family: inherit;
+}
+
+.add-user-field input:focus,
+.add-user-field select:focus {
+  border-color: #0786b2;
+}
+
+.add-user-field input::placeholder {
+  color: #929ba0;
+}
+
+.add-user-field small {
+  font-size: 9px;
+  color: #899399;
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.add-user-select-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.add-user-info {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  background: #e5f3f7;
+  border-radius: 8px;
+  margin-top: 5px;
+}
+
+.add-user-info > span {
+  color: #0786b2;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.add-user-info p {
+  font-size: 10px;
+  color: #536a75;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.add-user-info strong {
+  display: block;
+  color: #0786b2;
+  margin-bottom: 3px;
+}
+
+.add-user-message {
+  font-size: 10px;
+  color: #0786b2;
+  background: #e5f3f7;
+  padding: 10px;
+  border-radius: 7px;
+  line-height: 1.5;
+}
+
+.add-user-form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.add-user-form-footer > span {
+  color: #899399;
+  font-size: 9px;
+}
+
+.add-user-form-footer > div {
+  display: flex;
+  gap: 8px;
+}
+
+.add-user-cancel,
+.add-user-submit {
+  border-radius: 7px;
+  padding: 10px 17px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.add-user-cancel {
+  background: #f8f6f2;
+  border: 1px solid #e9e4dc;
+  color: #59656c;
+}
+
+.add-user-submit {
+  background: #0786b2;
+  border: 1px solid #0786b2;
+  color: #ffffff;
+}
+
+.add-user-submit:hover {
+  background: #066e93;
+}
+
+.add-user-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.permission-card {
+  padding: 19px;
+}
+
+.permission-card h3 {
+  margin-bottom: 15px;
+}
+
+.permission-item {
+  margin-bottom: 16px;
+}
+
+.permission-item:last-child {
+  margin-bottom: 0;
+}
+
+.permission-item strong {
+  font-size: 10px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+.permission-item p {
+  font-size: 10px;
+  color: #78838a;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.add-user-warning {
+  display: flex;
+  gap: 9px;
+  padding: 13px;
+  border-radius: 9px;
+  background: #fff4c7;
+  color: #806b14;
+}
+
+.add-user-warning > span {
+  font-size: 14px;
+}
+
+.add-user-warning strong {
+  font-size: 10px;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.add-user-warning p {
+  font-size: 9px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 750px) {
+  .add-user-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .add-user-sidebar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 500px) {
+  .add-user-card {
+    padding: 16px;
+  }
+
+  .add-user-select-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .add-user-sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .add-user-form-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

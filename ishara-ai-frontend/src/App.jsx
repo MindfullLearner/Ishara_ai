@@ -13,6 +13,7 @@ import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminLayout from "./components/admin/AdminLayout";
 import UserManagement from "./pages/admin/UserManagement";
+import AddUser from "./pages/admin/AddUser";
 import { getCurrentUser } from "./api/auth";
 import "./App.css";
 
@@ -104,6 +105,7 @@ function App() {
        <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<AdminDashboard />} />
         <Route path="users" element={<UserManagement />} />
+        <Route path="users/add" element={<AddUser />} />
        </Route>
         <Route
           path="*"
