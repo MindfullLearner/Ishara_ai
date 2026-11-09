@@ -22,6 +22,8 @@ import KnowledgeBase from "./pages/admin/KnowledgeBase";
 import AddArticle from "./pages/admin/AddArticle";
 import EditArticle from "./pages/admin/EditArticle";
 import SystemLogs from "./pages/admin/SystemLogs";
+import ProcessingActivity from "./pages/admin/ProcessingActivity";
+import ProfileSettings from "./pages/admin/ProfileSettings";
 
 import { getCurrentUser } from "./api/auth";
 import "./App.css";
@@ -123,6 +125,8 @@ function App() {
           <Route path="knowledge-base/add" element={<AddArticle />} />
           <Route path="knowledge-base/edit/:articleId" element={<EditArticle />} />
           <Route path="system-logs" element={<SystemLogs />} />
+          <Route path="processing-activity" element={<ProcessingActivity />} />
+          <Route path="profile-settings" element={<ProfileSettings />} />
         </Route>
 
         <Route

@@ -7,8 +7,8 @@ function AdminSidebar() {
     { label: "PSL dictionary", path: "/admin/psl-dictionary" },
     { label: "Knowledge base", path: "/admin/knowledge-base" },
     { label: "System logs", path: "/admin/system-logs" },
-    { label: "Processing activity", path: "/admin/activity" },
-    { label: "Profile & settings", path: "/admin/settings" },
+    { label: "Processing activity", path: "/admin/processing-activity" },
+    { label: "Profile & settings", path: "/admin/profile-settings" },
   ];
 
   return (
