@@ -1,295 +1,179 @@
-
-import { useState } from "react";
+import { Link } from "react-router-dom";
 import "./AdminDashboard.css";
 
-const navigationItems = [
-  { id: "overview", label: "Overview" },
-  { id: "users", label: "Users" },
-  { id: "dictionary", label: "PSL Dictionary" },
-  { id: "knowledge", label: "Knowledge Base" },
-  { id: "logs", label: "System Logs" },
-  { id: "processing", label: "Processing Activity" },
-  { id: "settings", label: "Profile & Settings" },
-];
-
-const statistics = [
+const overviewStats = [
   {
-    title: "Total users",
+    label: "Total users",
     value: "2,480",
-    detail: "↑ 12% this month",
+    note: "↑ 12% this month",
     icon: "♙",
   },
   {
-    title: "Translations",
+    label: "Translations",
     value: "8,432",
-    detail: "↑ 18% this month",
+    note: "↑ 18% this month",
     icon: "↔",
   },
   {
-    title: "Active today",
+    label: "Active today",
     value: "186",
-    detail: "Across all users",
-    icon: "◉",
+    note: "Across all users",
+    icon: "◎",
   },
   {
-    title: "System health",
+    label: "System health",
     value: "99.8%",
-    detail: "Operational",
+    note: "Operational",
     icon: "✓",
+    healthy: true,
   },
 ];
 
 const recentActivities = [
-  {
-    title: "New user registration",
-    time: "10:42 AM",
-    status: "Completed",
-  },
-  {
-    title: "PSL dictionary entry updated",
-    time: "10:25 AM",
-    status: "Completed",
-  },
-  {
-    title: "Translation completed",
-    time: "09:50 AM",
-    status: "Completed",
-  },
-  {
-    title: "Knowledge article published",
-    time: "Yesterday",
-    status: "Completed",
-  },
+  { title: "New user registration", time: "10:42 AM" },
+  { title: "PSL dictionary entry updated", time: "10:25 AM" },
+  { title: "Translation completed", time: "09:50 AM" },
+  { title: "Knowledge article published", time: "Yesterday" },
+];
+
+const systemServices = [
+  "Translation API",
+  "PSL Dictionary",
+  "Video processing",
+  "Database connection",
 ];
 
 function AdminDashboard() {
-  const [activePage, setActivePage] = useState("overview");
-
-  function handleNavigation(item) {
-    setActivePage(item.id);
-  }
-
   return (
-    <main className="admin-layout">
+    <div className="overview-page">
+      <div className="overview-heading">
+        <h1>System overview</h1>
+        <p>
+          Monitor platform activity, content and translation operations.
+        </p>
+      </div>
 
-      {/* Sidebar */}
-      <aside className="admin-sidebar">
-        <div className="admin-sidebar-brand">
-          <h2>ishara.ai</h2>
-          <span>ADMIN</span>
-        </div>
+      {/* Summary cards */}
+      <section className="overview-stats-grid">
+        {overviewStats.map((stat) => (
+          <article className="overview-stat-card" key={stat.label}>
+            <div className="overview-stat-top">
+              <span>{stat.label}</span>
+              <span className="overview-stat-icon">{stat.icon}</span>
+            </div>
 
-        <nav className="admin-navigation" aria-label="Admin navigation">
-          {navigationItems.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={`admin-nav-item ${
-                activePage === item.id ? "active" : ""
+            <strong className="overview-stat-value">{stat.value}</strong>
+
+            <span
+              className={`overview-stat-note ${
+                stat.healthy ? "healthy" : ""
               }`}
-              onClick={() => handleNavigation(item)}
             >
-              {item.label}
-            </button>
-          ))}
-        </nav>
+              {stat.note}
+            </span>
+          </article>
+        ))}
+      </section>
 
-        <div className="admin-sidebar-footer">
-          <span className="admin-sidebar-dot" />
-          Administration Panel
-        </div>
-      </aside>
+      {/* Activity and system status */}
+      <section className="overview-middle-grid">
+        <article className="overview-panel overview-activity-panel">
+          <div className="overview-panel-heading">
+            <div>
+              <h2>Recent activity</h2>
+              <p>Latest platform updates</p>
+            </div>
 
-      {/* Main content */}
-      <section className="admin-main">
+            <Link to="/admin/system-logs">View all</Link>
+          </div>
 
-        {/* Topbar */}
-        <header className="admin-topbar">
-          <div>
-            <span className="admin-topbar-title">
-              Administration
+          <div className="overview-activity-list">
+            {recentActivities.map((activity) => (
+              <div className="overview-activity-item" key={activity.title}>
+                <span className="overview-activity-dot" />
+
+                <div className="overview-activity-text">
+                  <strong>{activity.title}</strong>
+                  <span>{activity.time}</span>
+                </div>
+
+                <span className="overview-completed-badge">
+                  Completed
+                </span>
+              </div>
+            ))}
+          </div>
+        </article>
+
+        <article className="overview-panel overview-system-panel">
+          <div className="overview-panel-heading">
+            <div>
+              <h2>System status</h2>
+              <p>Current service health</p>
+            </div>
+
+            <span className="overview-live-badge">
+              <span /> Live
             </span>
           </div>
 
-          <div className="admin-topbar-right">
-            <button
-              type="button"
-              className="admin-notification-button"
-              aria-label="Notifications"
-            >
-              ♧
-            </button>
+          <div className="overview-service-list">
+            {systemServices.map((service) => (
+              <div className="overview-service-item" key={service}>
+                <span>{service}</span>
 
-            <button
-              type="button"
-              className="admin-avatar"
-              aria-label="Admin profile"
-            >
-              AD
-            </button>
-          </div>
-        </header>
-
-        {/* Dashboard content */}
-        <div className="admin-content">
-
-          <div className="admin-page-heading">
-            <h1>System overview</h1>
-            <p>
-              Monitor platform activity, content and translation
-              operations.
-            </p>
-          </div>
-
-          {/* Statistics */}
-          <section className="admin-stats-grid">
-            {statistics.map((stat) => (
-              <article className="admin-stat-card" key={stat.title}>
-                <div className="admin-stat-top">
-                  <span className="admin-stat-title">
-                    {stat.title}
-                  </span>
-                  <span className="admin-stat-icon">
-                    {stat.icon}
-                  </span>
-                </div>
-
-                <h2>{stat.value}</h2>
-
-                <p
-                  className={
-                    stat.title === "System health"
-                      ? "admin-stat-success"
-                      : "admin-stat-detail"
-                  }
-                >
-                  {stat.detail}
-                </p>
-              </article>
-            ))}
-          </section>
-
-          {/* Activity and system status */}
-          <section className="admin-information-grid">
-
-            <article className="admin-panel admin-activity-panel">
-              <div className="admin-panel-heading">
-                <div>
-                  <h3>Recent activity</h3>
-                  <p>Latest platform updates</p>
-                </div>
-
-                <button
-                  type="button"
-                  className="admin-view-all"
-                  onClick={() => setActivePage("logs")}
-                >
-                  View all
-                </button>
-              </div>
-
-              <div className="admin-activity-list">
-                {recentActivities.map((activity, index) => (
-                  <div
-                    className="admin-activity-item"
-                    key={index}
-                  >
-                    <div className="admin-activity-indicator" />
-
-                    <div className="admin-activity-details">
-                      <strong>{activity.title}</strong>
-                      <span>{activity.time}</span>
-                    </div>
-
-                    <span className="admin-activity-status">
-                      {activity.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </article>
-
-            <article className="admin-panel admin-status-panel">
-              <div className="admin-panel-heading">
-                <div>
-                  <h3>System status</h3>
-                  <p>Current service health</p>
-                </div>
-
-                <span className="admin-operational-badge">
-                  ● Live
+                <span className="overview-operational">
+                  <i />
+                  Operational
                 </span>
               </div>
+            ))}
+          </div>
+        </article>
+      </section>
 
-              <div className="admin-service-list">
-                {[
-                  "Translation API",
-                  "PSL Dictionary",
-                  "Video processing",
-                  "Database connection",
-                ].map((service) => (
-                  <div
-                    className="admin-service-item"
-                    key={service}
-                  >
-                    <span>{service}</span>
-                    <span className="admin-service-status">
-                      <span /> Operational
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </article>
+      {/* Quick actions */}
+      <section className="overview-panel overview-quick-actions">
+        <div className="overview-panel-heading">
+          <div>
+            <h2>Admin quick actions</h2>
+            <p>Frequently used administrative tasks</p>
+          </div>
+        </div>
 
-          </section>
+        <div className="overview-action-list">
+          <Link to="/admin/users" className="overview-action-btn">
+            <span>♙</span>
+            Manage users
+            <span className="overview-action-arrow">→</span>
+          </Link>
 
-          {/* Quick actions */}
-          <section className="admin-panel admin-quick-panel">
-            <div className="admin-panel-heading">
-              <div>
-                <h3>Admin quick actions</h3>
-                <p>Frequently used administrative tasks</p>
-              </div>
-            </div>
+          <Link
+            to="/admin/psl-dictionary"
+            className="overview-action-btn"
+          >
+            <span>＋</span>
+            Add a PSL sign
+            <span className="overview-action-arrow">→</span>
+          </Link>
 
-            <div className="admin-quick-actions">
-              <button
-                type="button"
-                onClick={() => setActivePage("users")}
-              >
-                <span>♙</span>
-                Manage users
-                <span className="admin-action-arrow">→</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActivePage("dictionary")}
-              >
-                <span>＋</span>
-                Add a PSL sign
-                <span className="admin-action-arrow">→</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActivePage("knowledge")}
-              >
-                <span>✎</span>
-                Edit knowledge articles
-                <span className="admin-action-arrow">→</span>
-              </button>
-            </div>
-          </section>
-
-          <footer className="admin-footer">
-            ISHARA AI Administration Panel
-            <span>© 2026 ISHARA AI</span>
-          </footer>
-
+          <Link
+            to="/admin/knowledge-base"
+            className="overview-action-btn"
+          >
+            <span>✎</span>
+            Edit knowledge articles
+            <span className="overview-action-arrow">→</span>
+          </Link>
         </div>
       </section>
-    </main>
+
+      {/* Footer */}
+      <footer className="overview-footer">
+        <span>ISHARA AI Administration Panel</span>
+        <span>© 2026 ISHARA AI</span>
+      </footer>
+    </div>
   );
 }
 

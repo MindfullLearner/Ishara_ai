@@ -31,6 +31,17 @@ class User(Base):
         nullable=False,
         index=True,
     )
+    full_name: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    status: Mapped[str] = mapped_column(
+        String(20),
+        default="active",
+        server_default="active",
+        nullable=False,
+    )
 
     sequence_hash: Mapped[str] = mapped_column(
         String(255),
@@ -53,3 +64,10 @@ class User(Base):
         server_default=func.now(),
         nullable=False,
     )
+    role: Mapped[str] = mapped_column(
+        String(20),
+        default="user",
+        server_default="user",
+        nullable=False,
+    )
+

@@ -13,8 +13,14 @@ from sqlalchemy.orm import Session
 
 from database import SessionLocal, engine
 from models import User
-from schemas import LoginRequest, SignupRequest, UserResponse
-
+from schemas import (
+    LoginRequest,
+    SignupRequest,
+    UserResponse,
+    AdminUserResponse,
+    AdminUserUpdate,
+    AdminUserStatusUpdate,
+)
 load_dotenv()
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
@@ -183,7 +189,17 @@ def login(
 
     if user is None:
         raise invalid_credentials
+    if user.status == "suspended":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account has been suspended. Please contact the administrator.",
+        )
 
+    if user.status == "pending":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account is pending activation.",
+        )
     now = datetime.now(timezone.utc)
 
     # PostgreSQL normally returns a timezone-aware value for
@@ -237,7 +253,10 @@ def login(
     return {
         "status": "success",
         "message": "Login successful.",
+        "id": user.id,
         "username": user.username,
+        "email": user.email,
+        "role": user.role,
         "access_token": access_token,
         "token_type": "bearer",
     }
@@ -283,8 +302,258 @@ def get_current_user(
             detail="User account not found.",
         )
 
+    if user.status == "suspended":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account has been suspended.",
+        )
+
+    if user.status == "pending":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account is pending activation.",
+        )
+
     return {
         "status": "success",
+        "id": user.id,
         "username": user.username,
         "email": user.email,
+        "full_name": user.full_name,
+        "role": user.role,
+        "account_status": user.status,
+    }
+def require_admin(
+    current_user: dict = Depends(get_current_user),
+):
+    if current_user["role"] != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required.",
+        )
+
+    return current_user
+@app.get("/api/admin/test")
+def test_admin_access(
+    current_user: dict = Depends(require_admin),
+):
+    return {
+        "status": "success",
+        "message": "Admin authorization successful!",
+        "username": current_user["username"],
+        "role": current_user["role"],
+    }
+@app.get(
+    "/api/admin/users",
+    response_model=list[AdminUserResponse],
+)
+def get_all_users(
+    current_user: dict = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    users = (
+        db.query(User)
+        .order_by(User.created_at.desc())
+        .all()
+    )
+
+    return users
+@app.get(
+    "/api/admin/users/{user_id}",
+    response_model=AdminUserResponse,
+)
+def get_user(
+    user_id: int,
+    current_user: dict = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found.",
+        )
+
+    return user
+@app.put(
+    "/api/admin/users/{user_id}",
+    response_model=AdminUserResponse,
+)
+def update_user(
+    user_id: int,
+    request: AdminUserUpdate,
+    current_user: dict = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found.",
+        )
+
+    # Prevent duplicate email addresses.
+    existing_email = (
+        db.query(User)
+        .filter(
+            User.email == request.email,
+            User.id != user_id,
+        )
+        .first()
+    )
+
+    if existing_email:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This email is already registered.",
+        )
+
+    # Protect the last administrator.
+    if user.role == "admin":
+        admin_count = (
+            db.query(User)
+            .filter(User.role == "admin")
+            .count()
+        )
+
+        removing_admin_access = (
+            request.role != "admin"
+            or request.status != "active"
+        )
+
+        if admin_count <= 1 and removing_admin_access:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="The last active administrator cannot be demoted or suspended.",
+            )
+
+    # Prevent an administrator from demoting or suspending themselves.
+    if user.id == current_user["id"]:
+        if request.role != "admin" or request.status != "active":
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="You cannot remove your own administrator access or suspend your account.",
+            )
+
+        user.full_name = request.full_name
+        user.email = str(request.email)
+        user.role = request.role
+        user.status = request.status
+
+    try:
+        db.commit()
+        db.refresh(user)
+
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to update user.",
+        )
+
+    return user
+@app.patch(
+    "/api/admin/users/{user_id}/status",
+    response_model=AdminUserResponse,
+)
+def update_user_status(
+    user_id: int,
+    request: AdminUserStatusUpdate,
+    current_user: dict = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found.",
+        )
+
+    if user.id == current_user["id"] and request.status != "active":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot suspend your own account.",
+        )
+
+    if user.role == "admin" and request.status != "active":
+        admin_count = (
+            db.query(User)
+            .filter(User.role == "admin")
+            .count()
+        )
+
+        if admin_count <= 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="The last administrator cannot be suspended.",
+            )
+
+    user.status = request.status
+
+    try:
+        db.commit()
+        db.refresh(user)
+
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to update account status.",
+        )
+
+    return user
+
+@app.delete("/api/admin/users/{user_id}")
+def delete_user(
+    user_id: int,
+    current_user: dict = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.id == user_id).first()
+
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found.",
+        )
+
+    # Prevent deleting your own account.
+    if user.id == current_user["id"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot delete your own account.",
+        )
+
+    # Protect the last administrator.
+    if user.role == "admin":
+        admin_count = (
+            db.query(User)
+            .filter(User.role == "admin")
+            .count()
+        )
+
+        if admin_count <= 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="The last administrator cannot be deleted.",
+            )
+
+    try:
+        db.delete(user)
+        db.commit()
+
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to delete user.",
+        )
+
+    return {
+        "status": "success",
+        "message": "User deleted successfully.",
+        "user_id": user_id,
     }
