@@ -1,32 +1,66 @@
-import { useMemo, useState } from "react";
+
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAllUsers } from "../../api/admin";
 import "./UserManagement.css";
 
-const SAMPLE_USERS = [
-  { id: "US-1042", name: "Ayesha Khan", email: "ayesha.khan@ishara.ai", role: "Admin", status: "Active", joined: "Oct 2026" },
-  { id: "US-1043", name: "Bilal Ahmed", email: "bilal.ahmed@ishara.ai", role: "User", status: "Active", joined: "Oct 2026" },
-  { id: "US-1044", name: "Sara Malik", email: "sara.malik@ishara.ai", role: "User", status: "Pending", joined: "Oct 2026" },
-  { id: "US-1045", name: "Hamza Ali", email: "hamza.ali@ishara.ai", role: "User", status: "Suspended", joined: "Sep 2026" },
-  { id: "US-1046", name: "Fatima Hassan", email: "fatima.hassan@ishara.ai", role: "Admin", status: "Active", joined: "Sep 2026" },
-  { id: "US-1047", name: "Omar Saeed", email: "omar.saeed@ishara.ai", role: "User", status: "Active", joined: "Aug 2026" },
-  { id: "US-1048", name: "Nida Iqbal", email: "nida.iqbal@ishara.ai", role: "User", status: "Pending", joined: "Aug 2026" },
-  { id: "US-1049", name: "Rahul Patel", email: "rahul.patel@ishara.ai", role: "Admin", status: "Active", joined: "Jul 2026" },
-  { id: "US-1050", name: "Zara Noor", email: "zara.noor@ishara.ai", role: "User", status: "Active", joined: "Jul 2026" },
-  { id: "US-1051", name: "Usman Tariq", email: "usman.tariq@ishara.ai", role: "User", status: "Pending", joined: "Jun 2026" },
-  { id: "US-1052", name: "Mariam Shah", email: "mariam.shah@ishara.ai", role: "User", status: "Active", joined: "Jun 2026" },
-  { id: "US-1053", name: "Daniyal Khan", email: "daniyal.khan@ishara.ai", role: "User", status: "Suspended", joined: "May 2026" },
-];
-
 const USERS_PER_PAGE = 8;
+
+function formatDate(dateString) {
+  if (!dateString) return "—";
+
+  const date = new Date(dateString);
+
+  if (Number.isNaN(date.getTime())) return "—";
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    year: "numeric",
+  });
+}
 
 function UserManagement() {
   const navigate = useNavigate();
 
-  const [users] = useState(SAMPLE_USERS);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("All");
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Fetch real users from the backend.
+  async function fetchUsers() {
+    try {
+      setLoading(true);
+      setError("");
+
+      const data = await getAllUsers();
+
+      const formattedUsers = data.map((user) => ({
+        id: user.id,
+        name: user.full_name || user.username,
+        email: user.email,
+        role: user.role === "admin" ? "Admin" : "User",
+        status:
+          user.status.charAt(0).toUpperCase() +
+          user.status.slice(1),
+        joined: formatDate(user.created_at),
+      }));
+
+      setUsers(formattedUsers);
+    } catch (err) {
+      setError(err.message || "Unable to load users.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
@@ -75,7 +109,7 @@ function UserManagement() {
         <div>
           <h1>User management</h1>
           <p>
-            Review accounts, roles and access status. - Example data
+            Review accounts, roles and access status.
           </p>
         </div>
 
@@ -92,6 +126,7 @@ function UserManagement() {
       <div className="users-toolbar">
         <div className="users-search">
           <label htmlFor="user-search">Search users</label>
+
           <input
             id="user-search"
             type="search"
@@ -147,13 +182,29 @@ function UserManagement() {
             </thead>
 
             <tbody>
-              {visibleUsers.length > 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="users-empty">
+                    Loading users...
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan="6" className="users-empty">
+                    <p>{error}</p>
+
+                    <button onClick={fetchUsers}>
+                      Try again
+                    </button>
+                  </td>
+                </tr>
+              ) : visibleUsers.length > 0 ? (
                 visibleUsers.map((user) => (
                   <tr key={user.id}>
                     <td>
                       <div className="users-user-info">
                         <div className="users-avatar">
-                          {user.name.charAt(0)}
+                          {user.name.charAt(0).toUpperCase()}
                         </div>
 
                         <div>
@@ -163,7 +214,9 @@ function UserManagement() {
                       </div>
                     </td>
 
-                    <td className="users-email">{user.email}</td>
+                    <td className="users-email">
+                      {user.email}
+                    </td>
 
                     <td>
                       <span
@@ -183,7 +236,9 @@ function UserManagement() {
                       </span>
                     </td>
 
-                    <td className="users-joined">{user.joined}</td>
+                    <td className="users-joined">
+                      {user.joined}
+                    </td>
 
                     <td>
                       <div className="users-row-actions">
@@ -197,7 +252,7 @@ function UserManagement() {
 
                         <button
                           onClick={() =>
-                           navigate(`/admin/users/edit/${user.id}`)
+                            navigate(`/admin/users/edit/${user.id}`)
                           }
                         >
                           Manage
@@ -219,45 +274,57 @@ function UserManagement() {
 
         {/* Pagination */}
 
-        <div className="users-pagination">
-          <span>
-            Showing{" "}
-            {filteredUsers.length === 0
-              ? 0
-              : (currentPage - 1) * USERS_PER_PAGE + 1}
-            –
-            {Math.min(currentPage * USERS_PER_PAGE, filteredUsers.length)} of{" "}
-            {filteredUsers.length} users
-          </span>
+        {!loading && !error && (
+          <div className="users-pagination">
+            <span>
+              Showing{" "}
+              {filteredUsers.length === 0
+                ? 0
+                : (currentPage - 1) * USERS_PER_PAGE + 1}
+              –
+              {Math.min(
+                currentPage * USERS_PER_PAGE,
+                filteredUsers.length
+              )}{" "}
+              of {filteredUsers.length} users
+            </span>
 
-          <div className="users-pagination-buttons">
-            <button
-              disabled={currentPage === 1}
-              onClick={() => setCurrentPage((page) => page - 1)}
-            >
-              ‹
-            </button>
+            <div className="users-pagination-buttons">
+              <button
+                disabled={currentPage === 1}
+                onClick={() =>
+                  setCurrentPage((page) => page - 1)
+                }
+              >
+                ‹
+              </button>
 
-            {Array.from({ length: totalPages }, (_, index) => index + 1).map(
-              (page) => (
+              {Array.from(
+                { length: totalPages },
+                (_, index) => index + 1
+              ).map((page) => (
                 <button
                   key={page}
-                  className={currentPage === page ? "current" : ""}
+                  className={
+                    currentPage === page ? "current" : ""
+                  }
                   onClick={() => setCurrentPage(page)}
                 >
                   {page}
                 </button>
-              )
-            )}
+              ))}
 
-            <button
-              disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage((page) => page + 1)}
-            >
-              ›
-            </button>
+              <button
+                disabled={currentPage === totalPages}
+                onClick={() =>
+                  setCurrentPage((page) => page + 1)
+                }
+              >
+                ›
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
