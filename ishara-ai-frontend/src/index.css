@@ -1,2 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 
-/* Global styles are defined in App.css for the initial prototype. */
+:root {
+  color-scheme: light;
+  font-family: var(--ish-font-body, 'DM Sans'), sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  --ish-blue: #0b84b4;
+  --ish-blue-deep: #076b94;
+  --ish-blue-soft: #e7f4f8;
+  --ish-beige: #f2ebdd;
+  --ish-white: #fff;
+  --ish-teal: #2fc7a3;
+  --ish-teal-deep: #108f78;
+  --ish-yellow: #ffd84d;
+  --ish-ink: #193445;
+  --ish-muted: #71808a;
+  --ish-border: #dce4e6;
+  --ish-danger: #bd3e4b;
+  --ish-danger-bg: #fff0f0;
+  --ish-success: #157762;
+  --ish-success-bg: #eaf8f3;
+  --ish-font-body: 'DM Sans';
+  --ish-font-display: 'Manrope';
+  --ish-space-1: .25rem;
+  --ish-space-2: .5rem;
+  --ish-space-3: .75rem;
+  --ish-space-4: 1rem;
+  --ish-space-5: 1.25rem;
+  --ish-space-6: 1.5rem;
+  --ish-space-8: 2rem;
+  --ish-space-10: 2.5rem;
+  --ish-space-12: 3rem;
+  --ish-radius-sm: .6rem;
+  --ish-radius-md: .9rem;
+  --ish-radius-lg: 1.25rem;
+  --ish-radius-card: 1.5rem;
+  --ish-shadow-card: 0 18px 55px rgba(40, 54, 48, .10), 0 2px 8px rgba(40, 54, 48, .04);
+  --ish-shadow-soft: 0 8px 28px rgba(25, 52, 69, .07);
+  --ish-focus: 0 0 0 3px rgba(11, 132, 180, .2);
+  --ish-breakpoint-tablet: 900px;
+  --ish-breakpoint-mobile: 760px;
+  --ish-breakpoint-small: 390px;
+  color: var(--ish-ink);
+  background: var(--ish-beige);
+  font-synthesis: none;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { min-height: 100%; }
+body { width: 100%; min-height: 100vh; margin: 0; font-family: var(--ish-font-body), sans-serif; color: var(--ish-ink); }
+button, input { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: none; box-shadow: var(--ish-focus); }
+a { color: var(--ish-blue-deep); }

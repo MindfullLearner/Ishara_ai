@@ -1,36 +1,24 @@
 
 import re
+from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
-SYMBOL_IDS = {
-    "heart",
-    "star",
-    "moon",
-    "sun",
-    "flower",
-    "lightning",
-    "leaf",
-    "rainbow",
-}
-
-
 class SignupRequest(BaseModel):
-    username: str = Field(min_length=3, max_length=30)
+    model_config = ConfigDict(extra="forbid")
+
+    full_name: str = Field(min_length=2, max_length=100)
     email: EmailStr
-    sequence: list[str] = Field(min_length=5, max_length=5)
+    password: str = Field(min_length=8, max_length=128)
 
-    @field_validator("username")
+    @field_validator("full_name")
     @classmethod
-    def validate_username(cls, value: str) -> str:
+    def validate_full_name(cls, value: str) -> str:
         value = value.strip()
-
-        if not re.fullmatch(r"[A-Za-z0-9_]{3,30}", value):
-            raise ValueError(
-                "Username must contain 3–30 letters, numbers, or underscores."
-            )
-
+        if len(value) < 2:
+            raise ValueError("Full name must contain at least 2 characters.")
         return value
 
     @field_validator("email")
@@ -38,40 +26,98 @@ class SignupRequest(BaseModel):
     def normalize_email(cls, value: str) -> str:
         return value.strip().lower()
 
-    @field_validator("sequence")
+    @field_validator("password")
     @classmethod
-    def validate_sequence(cls, value: list[str]) -> list[str]:
-        if any(symbol not in SYMBOL_IDS for symbol in value):
-            raise ValueError("The symbol sequence contains an invalid symbol.")
-
+    def validate_password(cls, value: str) -> str:
+        if not re.search(r"[A-Z]", value):
+            raise ValueError("Password must contain an uppercase letter.")
+        if not re.search(r"\d", value):
+            raise ValueError("Password must contain a number.")
         return value
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=1, max_length=128)
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, value: str) -> str:
+        return value.strip().lower()
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, value: str) -> str:
+        return value.strip().lower()
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str = Field(min_length=8, max_length=128)
+
+    @field_validator("new_password")
+    @classmethod
+    def validate_password(cls, value: str) -> str:
+        if not re.search(r"[A-Z]", value):
+            raise ValueError("Password must contain an uppercase letter.")
+        if not re.search(r"\d", value):
+            raise ValueError("Password must contain a number.")
+        return value
+
+
+class VerifyEmailRequest(BaseModel):
+    token: str
 
 
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    username: str
+    full_name: str
     email: EmailStr
+    role: str
+    is_verified: bool
 
-class LoginRequest(BaseModel):
-    username: str = Field(min_length=3, max_length=30)
-    sequence: list[str] = Field(min_length=5, max_length=5)
 
-    @field_validator("username")
+class AdminUserResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    full_name: str
+    email: EmailStr
+    role: Literal["user", "admin"]
+    status: Literal["active", "pending", "suspended"]
+    is_verified: bool
+    created_at: datetime
+
+
+class AdminUserUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    full_name: str = Field(min_length=2, max_length=100)
+    email: EmailStr
+    role: Literal["user", "admin"]
+    status: Literal["active", "pending", "suspended"]
+
+    @field_validator("full_name")
     @classmethod
-    def validate_username(cls, value: str) -> str:
+    def validate_full_name(cls, value: str) -> str:
         value = value.strip()
-
-        if not re.fullmatch(r"[A-Za-z0-9_]{3,30}", value):
-            raise ValueError("Invalid username format.")
-
+        if len(value) < 2:
+            raise ValueError("Full name must contain at least 2 characters.")
         return value
 
-    @field_validator("sequence")
+    @field_validator("email")
     @classmethod
-    def validate_sequence(cls, value: list[str]) -> list[str]:
-        if any(symbol not in SYMBOL_IDS for symbol in value):
-            raise ValueError("The symbol sequence contains an invalid symbol.")
+    def normalize_email(cls, value: str) -> str:
+        return value.strip().lower()
 
-        return value
+
+class AdminUserStatusUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    status: Literal["active", "pending", "suspended"]

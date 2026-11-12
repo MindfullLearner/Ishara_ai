@@ -2,6 +2,38 @@
 const API_BASE_URL = "http://127.0.0.1:8000";
 const TOKEN_KEY = "ishara_access_token";
 
+function getApiErrorMessage(detail, fallback) {
+  if (typeof detail === "string" && detail.trim()) return detail;
+
+  if (Array.isArray(detail)) {
+    const messages = detail.map((item) => {
+      if (typeof item === "string") return item;
+      if (!item || typeof item !== "object" || typeof item.msg !== "string") {
+        return "";
+      }
+
+      const location = Array.isArray(item.loc)
+        ? item.loc.filter((part) => part !== "body").join(" → ")
+        : "";
+      return location ? `${location}: ${item.msg}` : item.msg;
+    }).filter(Boolean);
+
+    if (messages.length) return messages.join(" ");
+  }
+
+  if (detail && typeof detail === "object" && typeof detail.message === "string") {
+    return detail.message;
+  }
+
+  return fallback;
+}
+
+function makeApiError(response, data, fallback) {
+  const error = new Error(getApiErrorMessage(data.detail, fallback));
+  error.status = response.status;
+  return error;
+}
+
 async function sendAuthRequest(endpoint, payload) {
   let response;
 
@@ -22,29 +54,33 @@ async function sendAuthRequest(endpoint, payload) {
   const data = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    const error = new Error(
-      data.detail || "The request failed. Please try again."
-    );
-
-    error.status = response.status;
-    throw error;
+    throw makeApiError(response, data, "The request failed. Please try again.");
   }
 
   return data;
 }
 
-export function signupUser({ username, email, sequence }) {
+// Create a new account
+export function signupUser({ full_name, email, password }) {
   return sendAuthRequest("/api/auth/signup", {
-    username,
+    full_name,
     email,
-    sequence,
+    password,
   });
 }
 
-export async function loginUser({ username, sequence }) {
+// Verify email using the token from the email link
+export function verifyEmail(token) {
+  return sendAuthRequest("/api/auth/verify-email", {
+    token,
+  });
+}
+
+// Login with email and password
+export async function loginUser({ email, password }) {
   const data = await sendAuthRequest("/api/auth/login", {
-    username,
-    sequence,
+    email,
+    password,
   });
 
   if (data.access_token) {
@@ -52,6 +88,21 @@ export async function loginUser({ username, sequence }) {
   }
 
   return data;
+}
+
+// Request password reset email
+export function forgotPassword(email) {
+  return sendAuthRequest("/api/auth/forgot-password", {
+    email,
+  });
+}
+
+// Set a new password using reset token
+export function resetPassword({ token, new_password }) {
+  return sendAuthRequest("/api/auth/reset-password", {
+    token,
+    new_password,
+  });
 }
 
 export function getAccessToken() {
@@ -62,6 +113,7 @@ export function logoutUser() {
   sessionStorage.removeItem(TOKEN_KEY);
 }
 
+// Get currently authenticated user
 export async function getCurrentUser() {
   const token = getAccessToken();
 
@@ -92,12 +144,7 @@ export async function getCurrentUser() {
       return null;
     }
 
-    const error = new Error(
-      data.detail || "Unable to verify your session."
-    );
-
-    error.status = response.status;
-    throw error;
+    throw makeApiError(response, data, "Unable to verify your session.");
   }
 
   return data;

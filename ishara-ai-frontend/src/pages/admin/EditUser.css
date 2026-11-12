@@ -1,0 +1,291 @@
+
+.edit-user-page {
+  width: 100%;
+  max-width: 1250px;
+  margin: 0 auto;
+}
+
+.edit-user-heading {
+  margin-bottom: 22px;
+}
+
+.edit-user-back {
+  background: none;
+  border: none;
+  color: #0786b2;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 10px;
+}
+
+.edit-user-heading h1 {
+  font-size: 23px;
+  color: #303b43;
+  margin: 0 0 5px;
+}
+
+.edit-user-heading p {
+  font-size: 11px;
+  color: #78838a;
+  font-weight: 600;
+  margin: 0;
+}
+
+.edit-user-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.65fr) minmax(230px, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.edit-user-card,
+.edit-user-side-card {
+  background: #ffffff;
+  border: 1px solid #e9e4dc;
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.edit-user-card-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.edit-user-card-heading h3,
+.edit-user-side-card h3 {
+  font-size: 13px;
+  color: #303b43;
+  margin: 0 0 7px;
+}
+
+.edit-user-card-heading p,
+.edit-user-side-card p {
+  font-size: 10px;
+  color: #78838a;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.edit-user-current-status {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 5px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.edit-user-current-status.active {
+  background: #e5f6f1;
+  color: #249c82;
+}
+
+.edit-user-current-status.pending {
+  background: #fff8d9;
+  color: #947800;
+}
+
+.edit-user-current-status.suspended {
+  background: #ffebeb;
+  color: #d45c5c;
+}
+
+.edit-user-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 15px;
+  flex: 1;
+  min-width: 0;
+}
+
+.edit-user-field label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #303b43;
+}
+
+.edit-user-field input,
+.edit-user-field select {
+  height: 38px;
+  border: 1px solid #e9e4dc;
+  border-radius: 7px;
+  padding: 0 11px;
+  background: #ffffff;
+  color: #303b43;
+  font-size: 11px;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.edit-user-field input:focus,
+.edit-user-field select:focus {
+  border-color: #0786b2;
+}
+
+.edit-user-field small {
+  font-size: 9px;
+  color: #78838a;
+}
+
+.edit-user-select-row {
+  display: flex;
+  gap: 15px;
+}
+
+.edit-user-info {
+  display: flex;
+  gap: 10px;
+  background: #e5f3f7;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 5px;
+  color: #0786b2;
+}
+
+.edit-user-info > span {
+  font-size: 14px;
+}
+
+.edit-user-info strong {
+  display: block;
+  font-size: 10px;
+  margin-bottom: 4px;
+}
+
+.edit-user-info p {
+  font-size: 9px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.edit-user-message {
+  color: #249c82;
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.edit-user-form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #eeeae4;
+  margin-top: 22px;
+  padding-top: 15px;
+  gap: 10px;
+}
+
+.edit-user-form-footer > span {
+  font-size: 9px;
+  color: #78838a;
+}
+
+.edit-user-form-footer > div {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-user-cancel,
+.edit-user-save {
+  border-radius: 7px;
+  padding: 10px 15px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.edit-user-cancel {
+  background: #f8f6f2;
+  border: 1px solid #e9e4dc;
+  color: #66737b;
+}
+
+.edit-user-save {
+  background: #0786b2;
+  border: 1px solid #0786b2;
+  color: #ffffff;
+}
+
+.edit-user-save:hover {
+  background: #066e93;
+}
+
+.edit-user-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.edit-user-side-card p {
+  margin-bottom: 13px;
+}
+
+.edit-user-suspend {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e9e4dc;
+  background: #f8f6f2;
+  border-radius: 7px;
+  color: #0786b2;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.edit-user-suspend:hover {
+  background: #e5f3f7;
+}
+
+.edit-user-suspend.activate {
+  background: #e5f6f1;
+  color: #249c82;
+  border-color: #d1eee5;
+}
+
+.edit-user-side-card small {
+  display: block;
+  font-size: 9px;
+  line-height: 1.5;
+  color: #78838a;
+  margin-top: 9px;
+}
+
+.edit-user-role-label {
+  display: block;
+  color: #0786b2;
+  font-size: 10px;
+  margin-top: 12px;
+}
+
+@media (max-width: 850px) {
+  .edit-user-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .edit-user-sidebar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 550px) {
+  .edit-user-sidebar {
+    grid-template-columns: 1fr;
+  }
+
+  .edit-user-select-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .edit-user-form-footer {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
