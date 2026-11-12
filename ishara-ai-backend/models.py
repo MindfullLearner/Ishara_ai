@@ -35,16 +35,6 @@ class User(Base):
         index=True,
     )
 
-    # Retained during the password migration so legacy identifiers and
-    # credential hashes remain available for audit/recovery. New accounts do
-    # not use either field.
-    username: Mapped[str | None] = mapped_column(
-        String(30),
-        unique=True,
-        index=True,
-        nullable=True,
-    )
-
     full_name: Mapped[str] = mapped_column(
         String(100),
         nullable=False,
@@ -58,11 +48,6 @@ class User(Base):
     )
 
     password_hash: Mapped[str | None] = mapped_column(
-        String(255),
-        nullable=True,
-    )
-
-    sequence_hash: Mapped[str | None] = mapped_column(
         String(255),
         nullable=True,
     )

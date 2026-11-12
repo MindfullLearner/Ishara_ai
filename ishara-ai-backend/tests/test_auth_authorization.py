@@ -81,10 +81,8 @@ def test_active_user_can_login(test_context):
 
 def test_legacy_null_password_can_login_without_crashing(test_context):
     user = User(
-        username="legacy-user",
         full_name="Legacy User",
         email="legacy@example.com",
-        sequence_hash="preserve-this-sequence-hash",
         password_hash=None,
         role="user",
         status="active",
@@ -102,15 +100,13 @@ def test_legacy_null_password_can_login_without_crashing(test_context):
     assert response.json()["detail"] == "Invalid email or password."
 
 
-def test_legacy_password_recovery_preserves_sequence_hash(test_context, monkeypatch):
+def test_legacy_password_recovery_verifies_email(test_context, monkeypatch):
     from main import password_hash
     import main
 
     user = User(
-        username="legacy-reset",
         full_name="Legacy Reset",
         email="legacy-reset@example.com",
-        sequence_hash="legacy-sequence-hash",
         password_hash=None,
         role="user",
         status="active",
@@ -139,7 +135,6 @@ def test_legacy_password_recovery_preserves_sequence_hash(test_context, monkeypa
     assert user.is_verified is True
     assert user.reset_token_hash is None
     assert user.reset_token_expires is None
-    assert user.sequence_hash == "legacy-sequence-hash"
 
 
 def test_signup_creates_active_unverified_user(test_context, monkeypatch):
@@ -160,8 +155,6 @@ def test_signup_creates_active_unverified_user(test_context, monkeypatch):
     assert user.status == "active"
     assert user.is_verified is False
     assert user.password_hash
-    assert user.username is None
-    assert user.sequence_hash is None
     assert user.failed_login_attempts == 0
 
 
