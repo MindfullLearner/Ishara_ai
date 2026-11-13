@@ -30,6 +30,8 @@ from schemas import (
     AdminUserResponse,
     AdminUserUpdate,
     AdminUserStatusUpdate,
+    ProfileUpdateRequest,
+    ChangePasswordRequest,
 )
 
 load_dotenv()
@@ -574,6 +576,124 @@ def get_me(
 ):
     return user
 
+@app.put("/api/auth/me", response_model=UserResponse)
+def update_my_profile(
+    request: ProfileUpdateRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    new_email = str(request.email).lower()
+    email_changed = new_email != user.email.lower()
+
+    if email_changed:
+        duplicate_email = (
+            db.query(User)
+            .filter(
+                func.lower(User.email) == new_email,
+                User.id != user.id,
+            )
+            .first()
+        )
+
+        if duplicate_email:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="This email address is already in use.",
+            )
+
+        # Require verification of the new email address.
+        token, token_hash = generate_secure_token()
+
+        user.full_name = request.full_name
+        user.email = new_email
+        user.is_verified = False
+        user.verification_token_hash = token_hash
+        user.verification_token_expires = (
+            datetime.now(timezone.utc) + timedelta(hours=24)
+        )
+
+        try:
+            send_verification_email(user, token)
+            db.commit()
+            db.refresh(user)
+
+        except HTTPException:
+            db.rollback()
+            raise
+
+        except Exception:
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Unable to send verification email. Profile was not changed.",
+            )
+
+        return user
+
+    user.full_name = request.full_name
+
+    try:
+        db.commit()
+        db.refresh(user)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This email address is already in use.",
+        )
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to update your profile.",
+        )
+
+    return user
+@app.patch("/api/auth/me/password")
+def change_my_password(
+    request: ChangePasswordRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not user.password_hash:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password change is not available for this account.",
+        )
+
+    if not password_hash.verify(
+        request.current_password,
+        user.password_hash,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect.",
+        )
+
+    if password_hash.verify(
+        request.new_password,
+        user.password_hash,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be different from your current password.",
+        )
+
+    user.password_hash = password_hash.hash(request.new_password)
+
+    try:
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to change your password.",
+        )
+
+    return {
+        "status": "success",
+        "message": "Password changed successfully.",
+    }
 
 @app.get("/api/admin/test")
 def admin_access_test(

@@ -149,3 +149,53 @@ export async function getCurrentUser() {
 
   return data;
 }
+
+export async function updateCurrentUserProfile(profileData) {
+  const token = getAccessToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(profileData),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw makeApiError(
+      response,
+      data,
+      "Unable to update profile."
+    );
+  }
+
+  return data;
+}
+
+export async function changeCurrentUserPassword(passwordData) {
+  const token = getAccessToken();
+
+  const response = await fetch(`${API_BASE_URL}/api/auth/me/password`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(passwordData),
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw makeApiError(
+      response,
+      data,
+      "Unable to change password."
+    );
+  }
+
+  return data;
+}

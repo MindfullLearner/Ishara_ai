@@ -1,12 +1,16 @@
+
 import { useState } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
-import AdminDemoNotice from "../../components/admin/AdminDemoNotice";
-import { logoutUser } from "../../api/auth";
+import {
+  logoutUser,
+  updateCurrentUserProfile,
+  changeCurrentUserPassword,
+} from "../../api/auth";
 import "./ProfileSettings.css";
 
 const DEFAULT_SETTINGS = {
-  fullName: "Sana Ahmed",
-  email: "sana.ahmed@example.com",
+  fullName: "",
+  email: "",
   largerText: false,
   reduceMotion: true,
   diagnosticSharing: false,
@@ -16,17 +20,18 @@ function loadSettings(user) {
   try {
     const storedSettings = localStorage.getItem("isharaAdminSettings");
     const parsedSettings = storedSettings ? JSON.parse(storedSettings) : {};
+
     return {
       ...DEFAULT_SETTINGS,
       ...parsedSettings,
-      fullName: user?.full_name || parsedSettings.fullName || DEFAULT_SETTINGS.fullName,
-      email: user?.email || parsedSettings.email || DEFAULT_SETTINGS.email,
+      fullName: user?.full_name || parsedSettings.fullName || "",
+      email: user?.email || parsedSettings.email || "",
     };
   } catch {
     return {
       ...DEFAULT_SETTINGS,
-      fullName: user?.full_name || DEFAULT_SETTINGS.fullName,
-      email: user?.email || DEFAULT_SETTINGS.email,
+      fullName: user?.full_name || "",
+      email: user?.email || "",
     };
   }
 }
@@ -52,6 +57,7 @@ function ProfileSettings() {
 
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState("success");
+  const [saving, setSaving] = useState(false);
 
   const handleSettingChange = (event) => {
     const { name, value } = event.target;
@@ -91,7 +97,7 @@ function ProfileSettings() {
     }));
   };
 
-  const handleSave = (event) => {
+  const handleSave = async (event) => {
     event.preventDefault();
 
     if (!settings.fullName.trim()) {
@@ -106,7 +112,12 @@ function ProfileSettings() {
       return;
     }
 
-    if (passwords.currentPassword || passwords.newPassword || passwords.confirmPassword) {
+    const changingPassword =
+      passwords.currentPassword ||
+      passwords.newPassword ||
+      passwords.confirmPassword;
+
+    if (changingPassword) {
       if (
         !passwords.currentPassword ||
         !passwords.newPassword ||
@@ -123,32 +134,98 @@ function ProfileSettings() {
         return;
       }
 
+      if (!/[A-Z]/.test(passwords.newPassword)) {
+        setMessageType("error");
+        setMessage("Your new password must contain at least one uppercase letter.");
+        return;
+      }
+
+      if (!/\d/.test(passwords.newPassword)) {
+        setMessageType("error");
+        setMessage("Your new password must contain at least one number.");
+        return;
+      }
+
       if (passwords.newPassword !== passwords.confirmPassword) {
         setMessageType("error");
         setMessage("New password and confirm password do not match.");
         return;
       }
-
-      setMessageType("info");
-      setMessage(
-        "Profile settings can be saved locally, but password changes require backend integration."
-      );
-      return;
     }
 
+    setSaving(true);
+    setMessage("");
+
     try {
+      // Save personal information in the backend.
+      const updatedUser = await updateCurrentUserProfile({
+        full_name: settings.fullName.trim(),
+        email: settings.email.trim().toLowerCase(),
+      });
+
+      // Save accessibility and privacy preferences locally.
+      const preferences = {
+        largerText: settings.largerText,
+        reduceMotion: settings.reduceMotion,
+        diagnosticSharing: settings.diagnosticSharing,
+      };
+
       localStorage.setItem(
         "isharaAdminSettings",
-        JSON.stringify(settings)
+        JSON.stringify({
+          ...settings,
+          ...preferences,
+        })
       );
 
-      setSavedSettings(settings);
-      setMessageType("success");
-      setMessage("Your profile and settings have been saved.");
+      // If the email changed, verification is required.
+      if (updatedUser.is_verified === false) {
+        window.alert(
+          "Your profile has been updated. Please verify your new email address using the verification link sent to your inbox. You will need to log in again after verification."
+        );
 
-    } catch {
+        logoutUser();
+        navigate("/login", { replace: true });
+        return;
+      }
+
+      // Change password only when requested.
+      if (changingPassword) {
+        await changeCurrentUserPassword({
+          current_password: passwords.currentPassword,
+          new_password: passwords.newPassword,
+        });
+      }
+
+      const updatedSettings = {
+        ...settings,
+        fullName: updatedUser.full_name,
+        email: updatedUser.email,
+      };
+
+      setSettings(updatedSettings);
+      setSavedSettings(updatedSettings);
+
+      setPasswords({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+
+      setMessageType("success");
+      setMessage(
+        changingPassword
+          ? "Your profile, password and preferences have been saved successfully."
+          : "Your profile and preferences have been saved successfully."
+      );
+
+    } catch (error) {
       setMessageType("error");
-      setMessage("Unable to save settings. Please try again.");
+      setMessage(
+        error.message || "Unable to save your changes. Please try again."
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -185,9 +262,6 @@ function ProfileSettings() {
 
   return (
     <div className="profile-settings-page">
-      <AdminDemoNotice>
-        Preference values are saved in this browser only. Profile and password changes are not connected to backend endpoints.
-      </AdminDemoNotice>
       <div className="profile-settings-heading">
         <h1>Profile &amp; settings</h1>
         <p>
@@ -506,7 +580,7 @@ function ProfileSettings() {
               type="button"
               className="profile-cancel-btn"
               onClick={handleCancel}
-              disabled={!isDirty}
+              disabled={!isDirty || saving}
             >
               Cancel
             </button>
@@ -514,9 +588,9 @@ function ProfileSettings() {
             <button
               type="submit"
               className="profile-save-btn"
-              disabled={!isDirty}
+              disabled={!isDirty || saving}
             >
-              Save changes
+              {saving ? "Saving..." : "Save changes"}
             </button>
           </div>
         </div>
