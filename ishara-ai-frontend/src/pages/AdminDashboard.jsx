@@ -1,18 +1,37 @@
+
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminDemoNotice from "../components/admin/AdminDemoNotice";
-import { getDashboardSummary } from "../api/admin";
+import {
+  getDashboardSummary,
+  getSystemLogs,
+} from "../api/admin";
 import "./AdminDashboard.css";
+
+function formatLogTime(timestamp) {
+  if (!timestamp) return "Time unavailable";
+
+  const date = new Date(timestamp);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Time unavailable";
+  }
+
+  return date.toLocaleString();
+}
 
 function AdminDashboard() {
   const [summary, setSummary] = useState(null);
+  const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activityLoading, setActivityLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activityError, setActivityError] = useState("");
 
   useEffect(() => {
     let isMounted = true;
 
-    async function fetchDashboardSummary() {
+    async function fetchDashboardData() {
       try {
         setLoading(true);
         setError("");
@@ -24,7 +43,9 @@ function AdminDashboard() {
         }
       } catch (err) {
         if (isMounted) {
-          setError(err.message || "Unable to load dashboard statistics.");
+          setError(
+            err.message || "Unable to load dashboard statistics."
+          );
         }
       } finally {
         if (isMounted) {
@@ -33,7 +54,35 @@ function AdminDashboard() {
       }
     }
 
-    fetchDashboardSummary();
+    async function fetchRecentActivity() {
+      try {
+        setActivityLoading(true);
+        setActivityError("");
+
+        const data = await getSystemLogs();
+
+        if (isMounted) {
+          const logs = Array.isArray(data)
+            ? data
+            : data?.logs ?? [];
+
+          setActivities(logs.slice(0, 5));
+        }
+      } catch (err) {
+        if (isMounted) {
+          setActivityError(
+            err.message || "Unable to load recent activity."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setActivityLoading(false);
+        }
+      }
+    }
+
+    fetchDashboardData();
+    fetchRecentActivity();
 
     return () => {
       isMounted = false;
@@ -70,15 +119,15 @@ function AdminDashboard() {
   const dataAvailability = [
     { name: "Translation statistics", status: "Not connected" },
     { name: "Active today tracking", status: "Not available" },
-    { name: "Recent activity logs", status: "Not connected" },
+    { name: "Recent activity logs", status: "Connected" },
     { name: "Service monitoring", status: "Not connected" },
   ];
 
   return (
     <div className="overview-page">
       <AdminDemoNotice>
-        User statistics are live from PostgreSQL. Translation statistics,
-        activity logs and service monitoring will be connected in later stages.
+        User statistics and recent system activity are connected to
+        PostgreSQL. Other monitoring features will be integrated later.
       </AdminDemoNotice>
 
       <div className="overview-heading">
@@ -97,7 +146,9 @@ function AdminDashboard() {
               <span className="overview-stat-icon">{stat.icon}</span>
             </div>
 
-            <strong className="overview-stat-value">{stat.value}</strong>
+            <strong className="overview-stat-value">
+              {stat.value}
+            </strong>
 
             <span className="overview-stat-note">{stat.note}</span>
           </article>
@@ -105,9 +156,7 @@ function AdminDashboard() {
       </section>
 
       {error && (
-        <div className="overview-error">
-          {error}
-        </div>
+        <div className="overview-error">{error}</div>
       )}
 
       {/* Activity and data availability */}
@@ -122,11 +171,50 @@ function AdminDashboard() {
             <Link to="/admin/system-logs">View all</Link>
           </div>
 
-          <div className="overview-empty-state">
-            Activity logging is not connected yet.
-            Recent activities will appear here once the system log feature
-            is implemented.
-          </div>
+          {activityLoading ? (
+            <div className="overview-empty-state">
+              Loading recent activity...
+            </div>
+          ) : activityError ? (
+            <div className="overview-empty-state overview-activity-error">
+              {activityError}
+            </div>
+          ) : activities.length === 0 ? (
+            <div className="overview-empty-state">
+              No system activity has been recorded yet.
+            </div>
+          ) : (
+            <div className="overview-activity-list">
+              {activities.map((activity) => (
+                <div
+                  className="overview-activity-item"
+                  key={activity.id}
+                >
+                  <span
+                    className={`overview-activity-dot severity-${(
+                      activity.severity || "INFO"
+                    ).toLowerCase()}`}
+                  />
+
+                  <div className="overview-activity-text">
+                    <strong>{activity.event}</strong>
+                    <span>
+                      {activity.source} ·{" "}
+                      {formatLogTime(activity.timestamp)}
+                    </span>
+                  </div>
+
+                  <span
+                    className={`overview-severity-badge severity-badge-${(
+                      activity.severity || "INFO"
+                    ).toLowerCase()}`}
+                  >
+                    {activity.severity || "INFO"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </article>
 
         <article className="overview-panel overview-system-panel">
@@ -142,9 +230,16 @@ function AdminDashboard() {
               <div className="overview-service-item" key={item.name}>
                 <span>{item.name}</span>
 
-                <span className="overview-unavailable">
-                  {item.status}
-                </span>
+                {item.status === "Connected" ? (
+                  <span className="overview-operational">
+                    <i />
+                    Connected
+                  </span>
+                ) : (
+                  <span className="overview-unavailable">
+                    {item.status}
+                  </span>
+                )}
               </div>
             ))}
           </div>

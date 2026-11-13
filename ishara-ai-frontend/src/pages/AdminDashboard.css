@@ -391,3 +391,53 @@
   font-size: 8px;
   white-space: nowrap;
 }
+
+/* Recent activity severity indicators */
+
+.overview-activity-dot.severity-info {
+  background: #078bb8;
+}
+
+.overview-activity-dot.severity-warn {
+  background: #e5a12b;
+}
+
+.overview-activity-dot.severity-error {
+  background: #d9534f;
+}
+
+.overview-activity-dot.severity-critical {
+  background: #8e2c35;
+}
+
+.overview-severity-badge {
+  flex-shrink: 0;
+  padding: 5px 8px;
+  border-radius: 20px;
+  font-size: 7px;
+  font-weight: 700;
+}
+
+.severity-badge-info {
+  background: #eaf5f8;
+  color: #078bb8;
+}
+
+.severity-badge-warn {
+  background: #fff5df;
+  color: #b47b16;
+}
+
+.severity-badge-error {
+  background: #fff0ef;
+  color: #c74640;
+}
+
+.severity-badge-critical {
+  background: #f8e8e9;
+  color: #8e2c35;
+}
+
+.overview-activity-error {
+  color: #b43d3d;
+}
