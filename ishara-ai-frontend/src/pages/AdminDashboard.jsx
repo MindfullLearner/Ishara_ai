@@ -1,55 +1,86 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import AdminDemoNotice from "../components/admin/AdminDemoNotice";
+import { getDashboardSummary } from "../api/admin";
 import "./AdminDashboard.css";
 
-const overviewStats = [
-  {
-    label: "Total users",
-    value: "2,480",
-    note: "↑ 12% this month",
-    icon: "♙",
-  },
-  {
-    label: "Translations",
-    value: "8,432",
-    note: "↑ 18% this month",
-    icon: "↔",
-  },
-  {
-    label: "Active today",
-    value: "186",
-    note: "Across all users",
-    icon: "◎",
-  },
-  {
-    label: "System health",
-    value: "99.8%",
-    note: "Operational",
-    icon: "✓",
-    healthy: true,
-  },
-];
-
-const recentActivities = [
-  { title: "New user registration", time: "10:42 AM" },
-  { title: "PSL dictionary entry updated", time: "10:25 AM" },
-  { title: "Translation completed", time: "09:50 AM" },
-  { title: "Knowledge article published", time: "Yesterday" },
-];
-
-const systemServices = [
-  "Translation API",
-  "PSL Dictionary",
-  "Video processing",
-  "Database connection",
-];
-
 function AdminDashboard() {
+  const [summary, setSummary] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchDashboardSummary() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await getDashboardSummary();
+
+        if (isMounted) {
+          setSummary(data);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err.message || "Unable to load dashboard statistics.");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchDashboardSummary();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const overviewStats = [
+    {
+      label: "Total users",
+      value: summary?.total_users ?? (loading ? "..." : "—"),
+      note: "Registered platform users",
+      icon: "♙",
+    },
+    {
+      label: "Active users",
+      value: summary?.active_users ?? (loading ? "..." : "—"),
+      note: "Currently active accounts",
+      icon: "◎",
+    },
+    {
+      label: "Pending users",
+      value: summary?.pending_users ?? (loading ? "..." : "—"),
+      note: "Awaiting account activation",
+      icon: "◷",
+    },
+    {
+      label: "Admin users",
+      value: summary?.admin_users ?? (loading ? "..." : "—"),
+      note: "Administrator accounts",
+      icon: "✓",
+    },
+  ];
+
+  const dataAvailability = [
+    { name: "Translation statistics", status: "Not connected" },
+    { name: "Active today tracking", status: "Not available" },
+    { name: "Recent activity logs", status: "Not connected" },
+    { name: "Service monitoring", status: "Not connected" },
+  ];
+
   return (
     <div className="overview-page">
       <AdminDemoNotice>
-        Overview metrics, service health and recent activity are static demo values, not live backend data.
+        User statistics are live from PostgreSQL. Translation statistics,
+        activity logs and service monitoring will be connected in later stages.
       </AdminDemoNotice>
+
       <div className="overview-heading">
         <h1>System overview</h1>
         <p>
@@ -68,18 +99,18 @@ function AdminDashboard() {
 
             <strong className="overview-stat-value">{stat.value}</strong>
 
-            <span
-              className={`overview-stat-note ${
-                stat.healthy ? "healthy" : ""
-              }`}
-            >
-              {stat.note}
-            </span>
+            <span className="overview-stat-note">{stat.note}</span>
           </article>
         ))}
       </section>
 
-      {/* Activity and system status */}
+      {error && (
+        <div className="overview-error">
+          {error}
+        </div>
+      )}
+
+      {/* Activity and data availability */}
       <section className="overview-middle-grid">
         <article className="overview-panel overview-activity-panel">
           <div className="overview-panel-heading">
@@ -91,44 +122,28 @@ function AdminDashboard() {
             <Link to="/admin/system-logs">View all</Link>
           </div>
 
-          <div className="overview-activity-list">
-            {recentActivities.map((activity) => (
-              <div className="overview-activity-item" key={activity.title}>
-                <span className="overview-activity-dot" />
-
-                <div className="overview-activity-text">
-                  <strong>{activity.title}</strong>
-                  <span>{activity.time}</span>
-                </div>
-
-                <span className="overview-completed-badge">
-                  Completed
-                </span>
-              </div>
-            ))}
+          <div className="overview-empty-state">
+            Activity logging is not connected yet.
+            Recent activities will appear here once the system log feature
+            is implemented.
           </div>
         </article>
 
         <article className="overview-panel overview-system-panel">
           <div className="overview-panel-heading">
             <div>
-              <h2>System status</h2>
-              <p>Current service health</p>
+              <h2>Data availability</h2>
+              <p>Backend integration status</p>
             </div>
-
-            <span className="overview-live-badge">
-              <span /> Live
-            </span>
           </div>
 
           <div className="overview-service-list">
-            {systemServices.map((service) => (
-              <div className="overview-service-item" key={service}>
-                <span>{service}</span>
+            {dataAvailability.map((item) => (
+              <div className="overview-service-item" key={item.name}>
+                <span>{item.name}</span>
 
-                <span className="overview-operational">
-                  <i />
-                  Operational
+                <span className="overview-unavailable">
+                  {item.status}
                 </span>
               </div>
             ))}

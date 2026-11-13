@@ -747,3 +747,47 @@ def delete_admin_user(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to delete user.",
         )
+
+@app.get("/api/admin/dashboard/summary")
+def get_admin_dashboard_summary(
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    total_users = (
+        db.query(func.count(User.id))
+        .scalar()
+    )
+
+    active_users = (
+        db.query(func.count(User.id))
+        .filter(User.status == "active")
+        .scalar()
+    )
+
+    pending_users = (
+        db.query(func.count(User.id))
+        .filter(User.status == "pending")
+        .scalar()
+    )
+
+    suspended_users = (
+        db.query(func.count(User.id))
+        .filter(User.status == "suspended")
+        .scalar()
+    )
+
+    admin_users = (
+        db.query(func.count(User.id))
+        .filter(User.role == "admin")
+        .scalar()
+    )
+
+    return {
+        "total_users": total_users,
+        "active_users": active_users,
+        "pending_users": pending_users,
+        "suspended_users": suspended_users,
+        "admin_users": admin_users,
+        "translations": None,
+        "active_today": None,
+    }

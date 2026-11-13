@@ -78,3 +78,7 @@ export function deleteUser(userId) {
     method: "DELETE",
   });
 }
+
+export function getDashboardSummary() {
+  return adminRequest("/api/admin/dashboard/summary");
+}

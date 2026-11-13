@@ -362,3 +362,32 @@
     flex-direction: column;
   }
 }
+/* Dashboard API states */
+
+.overview-error {
+  margin-bottom: 16px;
+  padding: 11px 14px;
+  border: 1px solid #f0caca;
+  border-radius: 7px;
+  background: #fff4f4;
+  color: #b43d3d;
+  font-size: 11px;
+}
+
+.overview-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 145px;
+  padding: 15px;
+  color: #87929a;
+  font-size: 10px;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.overview-unavailable {
+  color: #87929a;
+  font-size: 8px;
+  white-space: nowrap;
+}
