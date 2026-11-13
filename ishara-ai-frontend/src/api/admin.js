@@ -82,3 +82,15 @@ export function deleteUser(userId) {
 export function getDashboardSummary() {
   return adminRequest("/api/admin/dashboard/summary");
 }
+export function getSystemLogs(limit = 500) {
+  return adminRequest(
+    `/api/admin/system-logs?limit=${encodeURIComponent(limit)}`
+  );
+}
+
+export function createUser(userData) {
+  return adminRequest("/api/admin/users", {
+    method: "POST",
+    body: JSON.stringify(userData),
+  });
+}

@@ -1,7 +1,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getAllUsers } from "../../api/admin";
+import { getAllUsers, deleteUser } from "../../api/admin";
 import "./UserManagement.css";
 
 const USERS_PER_PAGE = 8;
@@ -31,6 +31,8 @@ function UserManagement() {
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [retry, setRetry] = useState(0);
+  const [deletingUserId, setDeletingUserId] = useState(null);
+  const [deleteError, setDeleteError] = useState("");
 
   function formatUsers(data) {
     return data.map((user) => ({
@@ -110,6 +112,53 @@ function UserManagement() {
     setStatusFilter(value);
     setCurrentPage(1);
   }
+  async function handleDelete(user) {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${user.name}? This action cannot be undone.`
+    );
+
+    if (!confirmed) return;
+
+    setDeletingUserId(user.id);
+    setDeleteError("");
+
+    try {
+      await deleteUser(user.id);
+
+      const updatedUsers = users.filter(
+        (item) => item.id !== user.id
+      );
+
+      setUsers(updatedUsers);
+
+      const remainingPages = Math.max(
+        1,
+        Math.ceil(updatedUsers.filter((item) => {
+          const searchMatch =
+            item.name.toLowerCase().includes(search.toLowerCase()) ||
+            item.email.toLowerCase().includes(search.toLowerCase());
+
+          const roleMatch =
+            roleFilter === "All" || item.role === roleFilter;
+
+          const statusMatch =
+            statusFilter === "All" || item.status === statusFilter;
+
+          return searchMatch && roleMatch && statusMatch;
+        }).length / USERS_PER_PAGE)
+      );
+
+      if (currentPage > remainingPages) {
+        setCurrentPage(remainingPages);
+      }
+    } catch (requestError) {
+      setDeleteError(
+        requestError.message || "Unable to delete user."
+      );
+    } finally {
+      setDeletingUserId(null);
+    }
+  }
 
   return (
     <div className="user-management">
@@ -172,7 +221,9 @@ function UserManagement() {
           ))}
         </div>
       </div>
-
+      {deleteError && (
+        <p className="users-delete-error">{deleteError}</p>
+      )}
       {/* Users table */}
 
       <div className="users-table-container">
@@ -265,7 +316,18 @@ function UserManagement() {
                         >
                           Manage
                         </button>
+
+                        <button
+                          className="users-delete-button"
+                          disabled={
+                            user.role === "Admin" || deletingUserId === user.id
+                          }
+                          onClick={() => handleDelete(user)}
+                        >
+                          {deletingUserId === user.id ? "Deleting..." : "Delete"}
+                        </button>
                       </div>
+                      
                     </td>
                   </tr>
                 ))

@@ -56,22 +56,46 @@ function EditUser() {
 
   async function handleSave(event) {
     event.preventDefault();
+
     setSaving(true);
     setError("");
     setMessage("");
+
     try {
-      const updated = await updateUser(userId, {
-        full_name: name.trim(),
-        email: email.trim(),
-        role,
-        status,
-      });
-      setUser(updated);
-      setName(updated.full_name);
-      setEmail(updated.email);
-      setRole(updated.role);
-      setStatus(updated.status);
-      setMessage("Account changes saved.");
+      let updatedUser = user;
+
+      // Check whether profile details or role have changed.
+      const detailsChanged =
+        name.trim() !== user.full_name ||
+        email.trim() !== user.email ||
+        role !== user.role;
+
+      // Check whether account status has changed.
+      const statusChanged = status !== user.status;
+
+      // Update profile details and role only when necessary.
+      if (detailsChanged) {
+        updatedUser = await updateUser(userId, {
+          full_name: name.trim(),
+          email: email.trim(),
+          role,
+          status: user.status,
+        });
+      }
+
+      // Update account status through the dedicated PATCH endpoint.
+      if (statusChanged) {
+        updatedUser = await updateUserStatus(userId, status);
+      }
+
+      setUser(updatedUser);
+      setName(updatedUser.full_name);
+      setEmail(updatedUser.email);
+      setRole(updatedUser.role);
+      setStatus(updatedUser.status);
+
+      setMessage("Account changes saved successfully.");
+
     } catch (requestError) {
       setError(requestError.message || "Unable to save account changes.");
     } finally {

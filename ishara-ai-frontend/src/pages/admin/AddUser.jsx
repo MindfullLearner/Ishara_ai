@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { createUser } from "../../api/admin";
 import "./AddUser.css";
 
 function AddUser() {
@@ -14,6 +15,7 @@ function AddUser() {
   });
 
   const [message, setMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -26,7 +28,7 @@ function AddUser() {
     setMessage("");
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
     if (!formData.fullName.trim() || !formData.email.trim()) {
@@ -34,9 +36,27 @@ function AddUser() {
       return;
     }
 
-    setMessage(
-      "Demo only: the form was validated, but no account was created or invited because the backend has no admin-create endpoint."
-    );
+    setIsSubmitting(true);
+    setMessage("");
+
+    try {
+      await createUser({
+        full_name: formData.fullName.trim(),
+        email: formData.email.trim().toLowerCase(),
+        role: formData.role.toLowerCase(),
+        status: formData.status === "Invited" ? "pending" : "active",
+      });
+
+      navigate("/admin/users", {
+        state: {
+          message: "User created successfully. Invitation email sent.",
+        },
+      });
+    } catch (error) {
+      setMessage(error.message || "Unable to create user. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -51,17 +71,11 @@ function AddUser() {
       </div>
 
       <div className="add-user-layout">
-        {/* User details form */}
-
         <section className="add-user-card">
           <h3>User details</h3>
 
           <p className="add-user-description">
             Use the person's preferred name and an email address they can access.
-          </p>
-
-          <p className="add-user-demo-note" role="note">
-            Demo form only. Submitting does not create a database account or send an invitation.
           </p>
 
           <form onSubmit={handleSubmit}>
@@ -77,6 +91,7 @@ function AddUser() {
                 onChange={handleChange}
                 maxLength={100}
                 required
+                minLength={2}
               />
 
               <small>
@@ -100,7 +115,7 @@ function AddUser() {
 
               <small>
                 Use a valid, unique email address. An invitation will be sent
-                when email functionality is implemented.
+                when the user is created.
               </small>
             </div>
 
@@ -150,7 +165,7 @@ function AddUser() {
             </div>
 
             {message && (
-              <p className="add-user-message" role="status">
+              <p className="add-user-message" role="alert">
                 {message}
               </p>
             )}
@@ -163,19 +178,22 @@ function AddUser() {
                   type="button"
                   className="add-user-cancel"
                   onClick={() => navigate("/admin/users")}
+                  disabled={isSubmitting}
                 >
                   Cancel
                 </button>
 
-                <button type="submit" className="add-user-submit">
-                  Create user
+                <button
+                  type="submit"
+                  className="add-user-submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Creating..." : "Create user"}
                 </button>
               </div>
             </div>
           </form>
         </section>
-
-        {/* Access permissions */}
 
         <aside className="add-user-sidebar">
           <section className="add-user-card permission-card">

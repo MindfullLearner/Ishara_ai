@@ -1,4 +1,4 @@
-
+from sqlalchemy import Text
 from datetime import datetime
 
 from sqlalchemy import (
@@ -109,4 +109,45 @@ class User(Base):
         DateTime(timezone=True),
         server_default=func.now(),
         nullable=False,
+    )
+class SystemLog(Base):
+    __tablename__ = "system_logs"
+
+    id: Mapped[int] = mapped_column(
+        Integer,
+        primary_key=True,
+        index=True,
+    )
+
+    severity: Mapped[str] = mapped_column(
+        String(20),
+        nullable=False,
+        index=True,
+    )
+
+    event: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+    )
+
+    source: Mapped[str] = mapped_column(
+        String(100),
+        nullable=False,
+    )
+
+    request_id: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    details: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    timestamp: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+        index=True,
     )

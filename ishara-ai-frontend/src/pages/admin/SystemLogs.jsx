@@ -1,163 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { getSystemLogs } from "../../api/admin";
 import "./SystemLogs.css";
-
-const createLogs = () => {
-  const now = Date.now();
-
-  const sampleLogs = [
-    {
-      id: 1,
-      hoursAgo: 1,
-      severity: "INFO",
-      event: "Translation job completed",
-      source: "Translate API",
-      requestId: "ISH-00142",
-      details: "The translation request was completed successfully.",
-    },
-    {
-      id: 2,
-      hoursAgo: 2,
-      severity: "WARN",
-      event: "Video upload received",
-      source: "Media Ingest",
-      requestId: "ISH-00143",
-      details: "A new video was received and is waiting for processing.",
-    },
-    {
-      id: 3,
-      hoursAgo: 3,
-      severity: "INFO",
-      event: "User signed in",
-      source: "Auth Service",
-      requestId: "ISH-00144",
-      details: "A user successfully signed in.",
-    },
-    {
-      id: 4,
-      hoursAgo: 5,
-      severity: "INFO",
-      event: "Dictionary record updated",
-      source: "PSL Dictionary",
-      requestId: "ISH-00145",
-      details: "A PSL dictionary record was updated.",
-    },
-    {
-      id: 5,
-      hoursAgo: 7,
-      severity: "ERROR",
-      event: "Processing timeout resolved",
-      source: "Worker Queue",
-      requestId: "ISH-00146",
-      details: "A processing task exceeded its expected execution time.",
-    },
-    {
-      id: 6,
-      hoursAgo: 9,
-      severity: "ERROR",
-      event: "Sign language model inference failed",
-      source: "Inference API",
-      requestId: "ISH-00147",
-      details: "The inference service returned an unexpected processing error.",
-    },
-    {
-      id: 7,
-      hoursAgo: 12,
-      severity: "CRITICAL",
-      event: "Database connection retry limit reached",
-      source: "Database Proxy",
-      requestId: "ISH-00148",
-      details: "The database connection could not be restored after multiple retries.",
-    },
-    {
-      id: 8,
-      hoursAgo: 15,
-      severity: "WARN",
-      event: "Knowledge base sync delayed",
-      source: "Knowledge Base",
-      requestId: "ISH-00149",
-      details: "The knowledge base synchronization took longer than expected.",
-    },
-    {
-      id: 9,
-      hoursAgo: 18,
-      severity: "INFO",
-      event: "Admin profile updated",
-      source: "Auth Service",
-      requestId: "ISH-00150",
-      details: "An administrator updated profile information.",
-    },
-    {
-      id: 10,
-      hoursAgo: 22,
-      severity: "WARN",
-      event: "Media processing queue increased",
-      source: "Media Ingest",
-      requestId: "ISH-00151",
-      details: "The media processing queue is above its normal size.",
-    },
-    {
-      id: 11,
-      hoursAgo: 30,
-      severity: "ERROR",
-      event: "Translation request failed",
-      source: "Translate API",
-      requestId: "ISH-00152",
-      details: "The translation service could not process the request.",
-    },
-    {
-      id: 12,
-      hoursAgo: 40,
-      severity: "INFO",
-      event: "New dictionary sign created",
-      source: "PSL Dictionary",
-      requestId: "ISH-00153",
-      details: "A new PSL sign draft was created.",
-    },
-    {
-      id: 13,
-      hoursAgo: 55,
-      severity: "CRITICAL",
-      event: "Worker service unavailable",
-      source: "Worker Queue",
-      requestId: "ISH-00154",
-      details: "The worker service became temporarily unavailable.",
-    },
-    {
-      id: 14,
-      hoursAgo: 80,
-      severity: "INFO",
-      event: "Knowledge base article updated",
-      source: "Knowledge Base",
-      requestId: "ISH-00155",
-      details: "An article was updated successfully.",
-    },
-    {
-      id: 15,
-      hoursAgo: 120,
-      severity: "WARN",
-      event: "Authentication retry detected",
-      source: "Auth Service",
-      requestId: "ISH-00156",
-      details: "Multiple authentication attempts were detected.",
-    },
-    {
-      id: 16,
-      hoursAgo: 160,
-      severity: "ERROR",
-      event: "Media validation failed",
-      source: "Media Ingest",
-      requestId: "ISH-00157",
-      details: "The uploaded media did not pass validation.",
-    },
-  ];
-
-  return sampleLogs.map((log) => ({
-    ...log,
-    timestamp: new Date(now - log.hoursAgo * 60 * 60 * 1000),
-  }));
-};
-
-const INITIAL_LOGS = createLogs();
 
 const SEVERITIES = ["All severities", "INFO", "WARN", "ERROR", "CRITICAL"];
 
@@ -181,15 +24,65 @@ const formatTimestamp = (date) => {
 };
 
 function SystemLogs() {
-  const [logs] = useState(INITIAL_LOGS);
-  const [referenceTime] = useState(() => Date.now());
+  const [logs, setLogs] = useState([]);
+  const [referenceTime, setReferenceTime] = useState(() => Date.now());
   const [search, setSearch] = useState("");
   const [timeFilter, setTimeFilter] = useState("24");
   const [severityFilter, setSeverityFilter] = useState("All severities");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedLog, setSelectedLog] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const entriesPerPage = 8;
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadLogs() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await getSystemLogs();
+
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid system logs response from the server.");
+        }
+
+        const formattedLogs = data.map((log) => ({
+          id: log.id,
+          severity: log.severity,
+          event: log.event,
+          source: log.source,
+          requestId: log.request_id || "",
+          details: log.details,
+          timestamp: new Date(log.timestamp),
+        }));
+
+        if (isMounted) {
+          setLogs(formattedLogs);
+          setReferenceTime(Date.now());
+          setSelectedLog(null);
+          setCurrentPage(1);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err.message || "Unable to load system logs.");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadLogs();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const filteredLogs = useMemo(() => {
     return logs.filter((log) => {
@@ -288,9 +181,7 @@ function SystemLogs() {
     <div className="system-logs-page">
       <div className="system-logs-heading">
         <h1>System logs</h1>
-        <p>
-          Review processing events, errors and service activity. · Example data
-        </p>
+        <p>Review processing events, errors and service activity.</p>
       </div>
 
       <div className="system-logs-toolbar">
@@ -328,7 +219,11 @@ function SystemLogs() {
           ))}
         </select>
 
-        <button className="system-logs-export" onClick={exportCSV}>
+        <button
+          className="system-logs-export"
+          onClick={exportCSV}
+          disabled={loading || Boolean(error)}
+        >
           <span>↓</span> Export CSV
         </button>
       </div>
@@ -356,15 +251,23 @@ function SystemLogs() {
             </thead>
 
             <tbody>
-              {visibleLogs.length > 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan="5" className="system-logs-empty">
+                    Loading system logs...
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan="5" className="system-logs-empty">
+                    {error}
+                  </td>
+                </tr>
+              ) : visibleLogs.length > 0 ? (
                 visibleLogs.map((log) => (
                   <tr
                     key={log.id}
-                    className={
-                      selectedLog?.id === log.id
-                        ? "selected"
-                        : ""
-                    }
+                    className={selectedLog?.id === log.id ? "selected" : ""}
                     onClick={() => setSelectedLog(log)}
                   >
                     <td>{formatTimestamp(log.timestamp)}</td>
@@ -380,7 +283,7 @@ function SystemLogs() {
 
                     <td className="system-logs-event">{log.event}</td>
                     <td>{log.source}</td>
-                    <td>Request ID: {log.requestId}</td>
+                    <td>Request ID: {log.requestId || "N/A"}</td>
                   </tr>
                 ))
               ) : (
@@ -405,7 +308,7 @@ function SystemLogs() {
 
           <div className="system-logs-pagination">
             <button
-              disabled={currentPage === 1}
+              disabled={currentPage === 1 || loading || Boolean(error)}
               onClick={() => handlePageChange(currentPage - 1)}
             >
               ‹
@@ -417,6 +320,7 @@ function SystemLogs() {
                 <button
                   key={page}
                   className={currentPage === page ? "active" : ""}
+                  disabled={loading || Boolean(error)}
                   onClick={() => handlePageChange(page)}
                 >
                   {page}
@@ -424,7 +328,9 @@ function SystemLogs() {
               ))}
 
             <button
-              disabled={currentPage === totalPages}
+              disabled={
+                currentPage === totalPages || loading || Boolean(error)
+              }
               onClick={() => handlePageChange(currentPage + 1)}
             >
               ›
@@ -433,10 +339,10 @@ function SystemLogs() {
         </div>
       </div>
 
-      {selectedLog && (
+      {selectedLog && !error && (
         <div className="system-logs-failure-card">
           <div className="system-logs-failure-heading">
-            <h3>Failure details</h3>
+            <h3>Log details</h3>
 
             <span
               className={`system-logs-severity ${selectedLog.severity.toLowerCase()}`}
@@ -449,7 +355,7 @@ function SystemLogs() {
           <p>{selectedLog.details}</p>
 
           <div className="system-logs-failure-meta">
-            <span>Request ID: {selectedLog.requestId}</span>
+            <span>Request ID: {selectedLog.requestId || "N/A"}</span>
             <span>Source: {selectedLog.source}</span>
             <button onClick={() => setSelectedLog(null)}>Close</button>
           </div>
@@ -457,7 +363,11 @@ function SystemLogs() {
       )}
 
       <div className="system-logs-data-note">
-        Showing example system activity. No real personal data is included.
+        {loading
+          ? "Retrieving system activity from the database..."
+          : error
+            ? "System activity could not be retrieved."
+            : `Showing ${logs.length} real database log entries.`}
       </div>
     </div>
   );

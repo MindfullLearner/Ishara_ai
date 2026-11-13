@@ -303,3 +303,24 @@
     flex-direction: column;
   }
 }
+.users-delete-button {
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  background: #fff;
+  cursor: pointer;
+}
+
+.users-delete-button:hover:not(:disabled) {
+  background: #fee2e2;
+}
+
+.users-delete-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.users-delete-error {
+  color: #dc2626;
+  margin: 10px 0;
+  font-size: 14px;
+}

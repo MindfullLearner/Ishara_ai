@@ -10,7 +10,7 @@ from urllib.parse import urlencode
 
 import jwt
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
 from pwdlib import PasswordHash
@@ -19,7 +19,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from database import SessionLocal, engine
-from models import User
+from models import User, SystemLog
 from schemas import (
     SignupRequest,
     LoginRequest,
@@ -30,8 +30,10 @@ from schemas import (
     AdminUserResponse,
     AdminUserUpdate,
     AdminUserStatusUpdate,
+    AdminUserCreate,
     ProfileUpdateRequest,
     ChangePasswordRequest,
+    SystemLogResponse,
 )
 
 load_dotenv()
@@ -78,6 +80,30 @@ def get_db():
     finally:
         db.close()
 
+def record_system_log(
+    db: Session,
+    severity: str,
+    event: str,
+    source: str,
+    details: str,
+    request_id: str | None = None,
+):
+    """Save a system event without interrupting the main application."""
+    try:
+        log = SystemLog(
+            severity=severity,
+            event=event,
+            source=source,
+            request_id=request_id,
+            details=details,
+        )
+
+        db.add(log)
+        db.commit()
+
+    except SQLAlchemyError:
+        db.rollback()
+        # Logging failure should not interrupt the main application.
 
 def create_access_token(user_id: int) -> str:
     now = datetime.now(timezone.utc)
@@ -174,6 +200,31 @@ If you did not request a password reset, ignore this email.
         body,
     )
 
+def send_admin_invitation_email(user: User, token: str):
+    query = urlencode({"token": token})
+    invitation_link = (
+        f"{FRONTEND_URL.rstrip('/')}/reset-password?{query}"
+    )
+
+    body = f"""
+Hello {user.full_name},
+
+An administrator has created an ISHARA AI account for you.
+
+Please open the following link to set your password:
+
+{invitation_link}
+
+This invitation link expires in 24 hours.
+
+If you were not expecting this invitation, please ignore this email.
+"""
+
+    send_email(
+        user.email,
+        "Your ISHARA AI account invitation",
+        body,
+    )
 
 def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(security),
@@ -441,7 +492,9 @@ def login(
         user.failed_login_attempts = 0
         db.commit()
 
-    if user.password_hash is None or not password_hash.verify(request.password, user.password_hash):
+    if user.password_hash is None or not password_hash.verify(
+        request.password, user.password_hash
+    ):
         user.failed_login_attempts += 1
 
         if user.failed_login_attempts >= 3:
@@ -449,6 +502,14 @@ def login(
             user.locked_until = now + timedelta(minutes=15)
 
         db.commit()
+
+        record_system_log(
+            db=db,
+            severity="WARN",
+            event="Failed login attempt",
+            source="auth.login",
+            details=f"Failed login attempt for User ID {user.id}.",
+        )
 
         if user.locked_until is not None:
             raise HTTPException(
@@ -479,6 +540,14 @@ def login(
     user.failed_login_attempts = 0
     user.locked_until = None
     db.commit()
+
+    record_system_log(
+        db=db,
+        severity="INFO",
+        event="User login successful",
+        source="auth.login",
+        details=f"User ID {user.id} logged in successfully.",
+    )
 
     access_token = create_access_token(user.id)
 
@@ -709,6 +778,84 @@ def list_users(
 ):
     return db.query(User).order_by(User.created_at.desc(), User.id.desc()).all()
 
+@app.post(
+    "/api/admin/users",
+    response_model=AdminUserResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_admin_user(
+    request: AdminUserCreate,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    # Check whether the email is already registered.
+    existing_user = (
+        db.query(User)
+        .filter(func.lower(User.email) == str(request.email).lower())
+        .first()
+    )
+
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This email address is already registered.",
+        )
+
+    # Generate a secure password-setup token.
+    token, token_hash = generate_secure_token()
+
+    new_user = User(
+        full_name=request.full_name,
+        email=str(request.email).lower(),
+        password_hash=None,
+        role=request.role,
+        status=request.status,
+        is_verified=False,
+        failed_login_attempts=0,
+        reset_token_hash=token_hash,
+        reset_token_expires=(
+            datetime.now(timezone.utc) + timedelta(hours=24)
+        ),
+    )
+
+    try:
+        db.add(new_user)
+        db.flush()
+
+        # Send the invitation before committing the new account.
+        send_admin_invitation_email(new_user, token)
+
+        db.commit()
+        db.refresh(new_user)
+
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="This email address is already registered.",
+        )
+
+    except Exception as error:
+        db.rollback()
+        print("ADMIN CREATE USER ERROR:", repr(error))
+
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Unable to create the user or send the invitation email. Please try again.",
+        )
+
+    # Record the successful invitation.
+    record_system_log(
+        db=db,
+        severity="INFO",
+        event="User invitation sent",
+        source="admin.users.create",
+        details=(
+            f"Admin ID {admin.id} invited User ID {new_user.id}."
+        ),
+    )
+
+    return new_user
 
 @app.get("/api/admin/users/{user_id}", response_model=AdminUserResponse)
 def get_admin_user(
@@ -789,7 +936,17 @@ def update_admin_user(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to update user.",
         )
+
+    record_system_log(
+        db=db,
+        severity="INFO",
+        event="User details updated",
+        source="admin.users.update",
+        details=f"Admin ID {admin.id} updated User ID {user.id}.",
+    )
+
     return user
+
 
 
 @app.patch(
@@ -803,6 +960,7 @@ def update_admin_user_status(
     db: Session = Depends(get_db),
 ):
     user = db.query(User).filter(User.id == user_id).first()
+
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -822,7 +980,10 @@ def update_admin_user_status(
     ):
         user = assert_not_last_active_administrator(db, user)
 
+    # Save the previous status before changing it.
+    old_status = user.status
     user.status = request.status
+
     try:
         db.commit()
         db.refresh(user)
@@ -832,8 +993,20 @@ def update_admin_user_status(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to update account status.",
         )
-    return user
 
+    if old_status != user.status:
+        record_system_log(
+            db=db,
+            severity="WARN",
+            event="User account status changed",
+            source="admin.users.status",
+            details=(
+                f"Admin ID {admin.id} changed User ID {user.id} "
+                f"status from {old_status} to {user.status}."
+            ),
+        )
+
+    return user
 
 @app.delete(
     "/api/admin/users/{user_id}",
@@ -845,6 +1018,7 @@ def delete_admin_user(
     db: Session = Depends(get_db),
 ):
     user = db.query(User).filter(User.id == user_id).first()
+
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -858,6 +1032,10 @@ def delete_admin_user(
         )
 
     user = assert_not_last_active_administrator(db, user)
+
+    # Save the ID before deleting the user.
+    deleted_user_id = user.id
+
     try:
         db.delete(user)
         db.commit()
@@ -867,6 +1045,15 @@ def delete_admin_user(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to delete user.",
         )
+
+    # Record the deletion after successful database commit.
+    record_system_log(
+        db=db,
+        severity="WARN",
+        event="User account deleted",
+        source="admin.users.delete",
+        details=f"Admin ID {admin.id} deleted User ID {deleted_user_id}.",
+    )
 
 @app.get("/api/admin/dashboard/summary")
 def get_admin_dashboard_summary(
@@ -911,3 +1098,20 @@ def get_admin_dashboard_summary(
         "translations": None,
         "active_today": None,
     }
+@app.get(
+    "/api/admin/system-logs",
+    response_model=list[SystemLogResponse],
+)
+def get_system_logs(
+    limit: int = Query(default=500, ge=1, le=1000),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    logs = (
+        db.query(SystemLog)
+        .order_by(SystemLog.timestamp.desc(), SystemLog.id.desc())
+        .limit(limit)
+        .all()
+    )
+
+    return logs
