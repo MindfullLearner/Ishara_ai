@@ -1,9 +1,14 @@
-import { useState } from "react";
+
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminDemoNotice from "../../../components/admin/AdminDemoNotice";
+import {
+  createPSLSign,
+  updatePSLSign,
+  uploadPSLSignMedia,
+} from "../../../api/admin";
 import "./PSLSignForm.css";
 
-const STORAGE_KEY = "isharaPSLSigns";
+const API_BASE_URL = "http://127.0.0.1:8000";
 
 const CATEGORIES = [
   "Everyday communication",
@@ -18,10 +23,7 @@ const CATEGORIES = [
 const EMPTY_FORM = {
   label: "",
   category: "Everyday communication",
-  referenceMedia: null,
-  referenceMediaName: "",
   notes: "",
-  status: "Draft",
 };
 
 function PSLSignForm({ mode = "add", sign = null }) {
@@ -31,16 +33,45 @@ function PSLSignForm({ mode = "add", sign = null }) {
   const [formData, setFormData] = useState(() =>
     isEdit && sign
       ? {
-          label: sign.label || "",
+          label: sign.word || "",
           category: sign.category || "Everyday communication",
-          referenceMedia: sign.referenceMedia || null,
-          referenceMediaName: sign.referenceMediaName || "",
-          notes: sign.notes || "",
-          status: sign.status || "Draft",
+          notes: sign.description || "",
         }
       : EMPTY_FORM
   );
-  const [mediaError, setMediaError] = useState("");
+
+  const [imageFile, setImageFile] = useState(null);
+  const [videoFile, setVideoFile] = useState(null);
+  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState("");
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState("");
+
+  // Create and clean up temporary image preview URLs
+  useEffect(() => {
+    if (!imageFile) {
+      setImagePreviewUrl("");
+      return;
+    }
+
+    const url = URL.createObjectURL(imageFile);
+    setImagePreviewUrl(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [imageFile]);
+
+  // Create and clean up temporary video preview URLs
+  useEffect(() => {
+    if (!videoFile) {
+      setVideoPreviewUrl("");
+      return;
+    }
+
+    const url = URL.createObjectURL(videoFile);
+    setVideoPreviewUrl(url);
+
+    return () => URL.revokeObjectURL(url);
+  }, [videoFile]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -51,97 +82,127 @@ function PSLSignForm({ mode = "add", sign = null }) {
     }));
   };
 
-  const handleMediaChange = (event) => {
-    const file = event.target.files?.[0];
+  const validateFile = (file, type) => {
+    if (!file) return "";
 
-    setMediaError("");
+    const extension = file.name.split(".").pop().toLowerCase();
 
-    if (!file) return;
+    if (type === "image") {
+      if (!["jpg", "jpeg", "png", "webp"].includes(extension)) {
+        return "Image must be JPG, JPEG, PNG, or WEBP.";
+      }
 
-    const allowedTypes = ["video/mp4", "video/webm", "video/quicktime"];
+      if (file.size > 5 * 1024 * 1024) {
+        return "Image size must not exceed 5 MB.";
+      }
+    }
 
-    if (!allowedTypes.includes(file.type)) {
-      setMediaError("Please select an MP4, WEBM, or MOV video.");
+    if (type === "video") {
+      if (!["mp4", "webm", "mov"].includes(extension)) {
+        return "Video must be MP4, WEBM, or MOV.";
+      }
+
+      if (file.size > 50 * 1024 * 1024) {
+        return "Video size must not exceed 50 MB.";
+      }
+    }
+
+    return "";
+  };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0] || null;
+    const validationError = validateFile(file, "image");
+
+    if (validationError) {
+      setError(validationError);
+      setImageFile(null);
       event.target.value = "";
       return;
     }
 
-    setFormData((previous) => ({
-      ...previous,
-      referenceMedia: null,
-      referenceMediaName: file.name,
-    }));
+    setError("");
+    setImageFile(file);
   };
 
-  const handleRemoveMedia = () => {
-    setFormData((previous) => ({
-      ...previous,
-      referenceMedia: null,
-      referenceMediaName: "",
-    }));
+  const handleVideoChange = (event) => {
+    const file = event.target.files?.[0] || null;
+    const validationError = validateFile(file, "video");
 
-    const fileInput = document.getElementById("psl-reference-media");
-    if (fileInput) fileInput.value = "";
-  };
-
-  const handleSubmit = (event) => {
-    event.preventDefault();
-
-    if (!formData.label.trim()) {
-      alert("Please enter an English gloss.");
+    if (validationError) {
+      setError(validationError);
+      setVideoFile(null);
+      event.target.value = "";
       return;
     }
 
-    if (!isEdit && !formData.referenceMediaName) {
-        setMediaError("Reference media is required.");
-        return;
+    setError("");
+    setVideoFile(file);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!formData.label.trim()) {
+      setError("Please enter an English gloss.");
+      return;
     }
 
-    const savedSigns = JSON.parse(
-      localStorage.getItem(STORAGE_KEY) || "[]"
-    );
-
-    const today = new Date().toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
-
-    if (isEdit) {
-      const updatedSigns = savedSigns.map((item) =>
-        String(item.id) === String(sign.id)
-          ? {
-              ...item,
-              ...formData,
-              date: today,
-              status: "Draft",
-            }
-          : item
-      );
-
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSigns));
-    } else {
-      const newSign = {
-        id: Date.now(),
-        ...formData,
-        date: today,
-        status: "Draft",
-      };
-
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify([newSign, ...savedSigns])
-      );
+    if (!formData.category.trim()) {
+      setError("Please select a category.");
+      return;
     }
 
-    navigate("/admin/psl-dictionary");
+    const payload = {
+      word: formData.label.trim(),
+      description: formData.notes.trim() || null,
+      category: formData.category,
+      video_url: isEdit ? sign?.video_url || null : null,
+      image_url: isEdit ? sign?.image_url || null : null,
+      status: "draft",
+    };
+
+    try {
+      setIsSaving(true);
+      setError("");
+
+      let savedSign;
+
+      if (isEdit) {
+        savedSign = await updatePSLSign(sign.id, payload);
+      } else {
+        savedSign = await createPSLSign(payload);
+      }
+
+      if (imageFile) {
+        savedSign = await uploadPSLSignMedia(
+          savedSign.id,
+          imageFile,
+          "image"
+        );
+      }
+
+      if (videoFile) {
+        savedSign = await uploadPSLSignMedia(
+          savedSign.id,
+          videoFile,
+          "video"
+        );
+      }
+
+      navigate("/admin/psl-dictionary");
+    } catch (err) {
+      setError(
+        err.message ||
+          `Unable to ${isEdit ? "update" : "create"} PSL sign.`
+      );
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <div className="psl-form-page">
-      <AdminDemoNotice>
-        Sign entries and media are saved in this browser only and are not sent to a backend API.
-      </AdminDemoNotice>
       <div className="psl-form-breadcrumb">
         <button
           type="button"
@@ -165,7 +226,7 @@ function PSLSignForm({ mode = "add", sign = null }) {
           <div className="psl-form-card-heading">
             <h2>Sign entry</h2>
             <span className={`psl-form-status ${isEdit ? "unvalidated" : ""}`}>
-              {isEdit ? "● Draft - Not validated" : "● Draft"}
+              ● Draft - Not validated
             </span>
           </div>
 
@@ -175,11 +236,18 @@ function PSLSignForm({ mode = "add", sign = null }) {
             </p>
           )}
 
+          {error && (
+            <p className="psl-form-error" role="alert">
+              {error}
+            </p>
+          )}
+
           <div className="psl-form-fields-row">
             <div className="psl-form-field">
               <label htmlFor="psl-label">
                 Label / English gloss <span>*</span>
               </label>
+
               <input
                 id="psl-label"
                 name="label"
@@ -187,6 +255,7 @@ function PSLSignForm({ mode = "add", sign = null }) {
                 onChange={handleChange}
                 placeholder="Enter an English meaning"
                 required
+                maxLength={150}
               />
             </div>
 
@@ -194,6 +263,7 @@ function PSLSignForm({ mode = "add", sign = null }) {
               <label htmlFor="psl-category">
                 Category <span>*</span>
               </label>
+
               <select
                 id="psl-category"
                 name="category"
@@ -210,72 +280,117 @@ function PSLSignForm({ mode = "add", sign = null }) {
             </div>
           </div>
 
+          {/* IMAGE UPLOAD */}
           <div className="psl-form-field psl-media-field">
-            <label>
-              Reference media <span>*</span>
-            </label>
+            <label>Reference image</label>
 
-            {isEdit && formData.referenceMediaName ? (
-              <div className="psl-existing-media">
-                <div className="psl-media-file-icon">▣</div>
-                <div className="psl-media-file-info">
-                  <strong>{formData.referenceMediaName}</strong>
-                  <span>Sample file · Reference media</span>
-                </div>
+            {(imagePreviewUrl || (isEdit && sign?.image_url)) && (
+              <div className="psl-image-preview">
+                <img
+                  src={
+                    imagePreviewUrl ||
+                    `${API_BASE_URL}${sign.image_url}`
+                  }
+                  alt={`${formData.label || "PSL sign"} reference`}
+                />
+
+                <span>
+                  {imageFile ? "New image preview" : "Current reference image"}
+                </span>
+              </div>
+            )}
+
+            {imageFile ? (
+              <div className="psl-selected-file">
+                <span>🖼️ {imageFile.name}</span>
                 <button
                   type="button"
-                  onClick={handleRemoveMedia}
-                  className="psl-remove-media"
+                  onClick={() => setImageFile(null)}
+                  disabled={isSaving}
                 >
                   Remove
                 </button>
               </div>
             ) : (
-              <label className="psl-upload-area" htmlFor="psl-reference-media">
-                <span className="psl-upload-icon">↑</span>
-                <strong>Attach a PSL reference video</strong>
+              <label className="psl-upload-area" htmlFor="psl-image">
+                <span className="psl-upload-icon">☁ ↑</span>
+                <strong>Upload reference image</strong>
                 <small>
-                  Use media with permission from the signer. No sample
-                  gestures are provided.
+                  Drag and drop your image here or choose a file
                 </small>
-                <span className="psl-choose-file">Choose reference media</span>
+                <span className="psl-choose-file">Choose image</span>
+
                 <input
-                  id="psl-reference-media"
+                  id="psl-image"
                   type="file"
-                  accept="video/mp4,video/webm,video/quicktime"
-                  onChange={handleMediaChange}
+                  accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                  onChange={handleImageChange}
+                  disabled={isSaving}
                 />
               </label>
             )}
 
-            {isEdit && (
-              <label className="psl-replace-media" htmlFor="psl-reference-media">
-                Replace reference media
-                <input
-                  id="psl-reference-media"
-                  type="file"
-                  accept="video/mp4,video/webm,video/quicktime"
-                  onChange={handleMediaChange}
-                />
-              </label>
-            )}
+            <small>JPG, JPEG, PNG, WEBP · Maximum 5 MB</small>
+          </div>
 
-            {formData.referenceMediaName && !isEdit && (
-              <div className="psl-selected-file">
-                <span>Selected: {formData.referenceMediaName}</span>
-                <button type="button" onClick={handleRemoveMedia}>
-                  Remove
-                </button>
+
+          {/* VIDEO UPLOAD */}
+          <div className="psl-form-field psl-media-field">
+            <label>Reference video</label>
+
+            {(videoPreviewUrl || (isEdit && sign?.video_url)) && (
+              <div className="psl-video-preview">
+                <video
+                  src={
+                    videoPreviewUrl ||
+                    `${API_BASE_URL}${sign.video_url}`
+                  }
+                  controls
+                  preload="metadata"
+                />
+
+                <span>
+                  {videoFile ? "New video preview" : "Current reference video"}
+                </span>
               </div>
             )}
 
-            {mediaError && (
-              <p className="psl-form-error">{mediaError}</p>
+            {videoFile ? (
+              <div className="psl-selected-file">
+                <span>🎬 {videoFile.name}</span>
+                <button
+                  type="button"
+                  onClick={() => setVideoFile(null)}
+                  disabled={isSaving}
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <label className="psl-upload-area" htmlFor="psl-video">
+                <span className="psl-upload-icon">☁ ↑</span>
+                <strong>Upload reference video</strong>
+                <small>
+                  Drag and drop your video here or choose a file
+                </small>
+                <span className="psl-choose-file">Choose video</span>
+
+                <input
+                  id="psl-video"
+                  type="file"
+                  accept=".mp4,.webm,.mov,video/mp4,video/webm,video/quicktime"
+                  onChange={handleVideoChange}
+                  disabled={isSaving}
+                />
+              </label>
             )}
+
+            <small>MP4, WEBM, MOV · Maximum 50 MB</small>
           </div>
 
           <div className="psl-form-field psl-notes-field">
             <label htmlFor="psl-notes">Notes for reviewers</label>
+
             <textarea
               id="psl-notes"
               name="notes"
@@ -284,6 +399,7 @@ function PSLSignForm({ mode = "add", sign = null }) {
               placeholder="Describe the signer, permission, region or context, and any questions for reviewers."
               rows={4}
             />
+
             <small>
               Do not describe an invalid sign or mark an unreviewed video as
               approved.
@@ -299,12 +415,21 @@ function PSLSignForm({ mode = "add", sign = null }) {
               type="button"
               className="psl-form-cancel"
               onClick={() => navigate("/admin/psl-dictionary")}
+              disabled={isSaving}
             >
               Cancel
             </button>
 
-            <button type="submit" className="psl-form-save">
-              {isEdit ? "Save changes" : "Save draft"}
+            <button
+              type="submit"
+              className="psl-form-save"
+              disabled={isSaving}
+            >
+              {isSaving
+                ? "Saving..."
+                : isEdit
+                  ? "Save changes"
+                  : "Save draft"}
             </button>
           </div>
         </form>
@@ -312,16 +437,18 @@ function PSLSignForm({ mode = "add", sign = null }) {
         <aside className="psl-form-sidebar">
           <div className="psl-guidance-card psl-validation-card">
             <div className="psl-guidance-icon">ⓘ</div>
+
             <div>
               <h3>
                 {isEdit
                   ? "Awaiting expert/community validation"
                   : "Validation required"}
               </h3>
+
               <p>
                 {isEdit
                   ? "This draft is not approved PSL content. It requires review and validation before publication."
-                  : "A draft entry must undergo review before it becomes searchable in the approved PSL dictionary."}
+                  : "A draft entry must undergo review and validation before publication in the approved PSL dictionary."}
               </p>
             </div>
           </div>
@@ -344,13 +471,14 @@ function PSLSignForm({ mode = "add", sign = null }) {
               <div className="psl-review-divider" />
 
               <p>
-                Last edited: {sign?.date || "Not available"}. Saving updates
-                this draft; it does not publish or validate the sign.
+                Saving updates this draft; it does not publish or validate
+                the sign.
               </p>
             </div>
           ) : (
             <div className="psl-guidance-card psl-reference-card">
               <h3>A responsible reference</h3>
+
               <ul>
                 <li>Provide an English gloss, not a claim of a universal sign.</li>
                 <li>Note regional variation and the source of your reference.</li>

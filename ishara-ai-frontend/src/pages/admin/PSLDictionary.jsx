@@ -1,56 +1,26 @@
+
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminDemoNotice from "../../components/admin/AdminDemoNotice";
+import {
+  getAllPSLSigns,
+  updatePSLSign,
+  deletePSLSign,
+} from "../../api/admin";
 import "./PSLDictionary.css";
 
-const STORAGE_KEY = "isharaPSLSigns";
-
-const INITIAL_SIGNS = [
-  { id: 1, label: "HELLO", category: "Greetings", meaning: "Hello", date: "12 Mar 2026", status: "Reviewed" },
-  { id: 2, label: "THANK YOU", category: "Greetings", meaning: "Thank you", date: "11 Mar 2026", status: "Draft" },
-  { id: 3, label: "PLEASE", category: "Social", meaning: "Please", date: "09 Mar 2026", status: "Reviewed" },
-  { id: 4, label: "GOOD MORNING", category: "Greetings", meaning: "Good morning", date: "08 Mar 2026", status: "Reviewed" },
-  { id: 5, label: "WATER", category: "Food & drink", meaning: "Water", date: "07 Mar 2026", status: "Draft" },
-  { id: 6, label: "RESTAURANT", category: "Travel", meaning: "Restaurant", date: "06 Mar 2026", status: "Reviewed" },
-  { id: 7, label: "HOSPITAL", category: "Health", meaning: "Hospital", date: "05 Mar 2026", status: "Draft" },
-  { id: 8, label: "GOODBYE", category: "Greetings", meaning: "Goodbye", date: "04 Mar 2026", status: "Reviewed" },
-  { id: 9, label: "BREAD", category: "Food & drink", meaning: "Bread", date: "03 Mar 2026", status: "Draft" },
-  { id: 10, label: "SCHOOL", category: "Education", meaning: "School", date: "02 Mar 2026", status: "Reviewed" },
-  { id: 11, label: "HELP", category: "Social", meaning: "Help", date: "01 Mar 2026", status: "Reviewed" },
-  { id: 12, label: "BUS", category: "Travel", meaning: "Bus", date: "28 Feb 2026", status: "Draft" },
-  { id: 13, label: "DOCTOR", category: "Health", meaning: "Doctor", date: "27 Feb 2026", status: "Reviewed" },
-  { id: 14, label: "APPLE", category: "Food & drink", meaning: "Apple", date: "26 Feb 2026", status: "Reviewed" },
-  { id: 15, label: "FAMILY", category: "Social", meaning: "Family", date: "25 Feb 2026", status: "Draft" },
-  { id: 16, label: "TRAIN", category: "Travel", meaning: "Train", date: "24 Feb 2026", status: "Reviewed" },
-  { id: 17, label: "WATER PLEASE", category: "Food & drink", meaning: "Please give me water", date: "23 Feb 2026", status: "Draft" },
-  { id: 18, label: "WELCOME", category: "Greetings", meaning: "Welcome", date: "22 Feb 2026", status: "Reviewed" },
-  { id: 19, label: "BOOK", category: "Education", meaning: "Book", date: "21 Feb 2026", status: "Draft" },
-  { id: 20, label: "POLICE", category: "Health", meaning: "Police", date: "20 Feb 2026", status: "Reviewed" },
-  { id: 21, label: "MILK", category: "Food & drink", meaning: "Milk", date: "19 Feb 2026", status: "Draft" },
-  { id: 22, label: "AIRPORT", category: "Travel", meaning: "Airport", date: "18 Feb 2026", status: "Reviewed" },
-  { id: 23, label: "SORRY", category: "Social", meaning: "Sorry", date: "17 Feb 2026", status: "Draft" },
-  { id: 24, label: "GOOD NIGHT", category: "Greetings", meaning: "Good night", date: "16 Feb 2026", status: "Reviewed" },
+const FILTERS = [
+  "All",
+  "Greetings",
+  "Food",
+  "Travel",
+  "Draft",
+  "Reviewed",
 ];
 
-const FILTERS = ["All", "Greetings", "Food", "Travel", "Draft", "Reviewed"];
+function formatDate(dateValue) {
+  if (!dateValue) return "—";
 
-function loadSigns() {
-  try {
-    const savedSigns = localStorage.getItem(STORAGE_KEY);
-
-    if (savedSigns) {
-      const parsedSigns = JSON.parse(savedSigns);
-      if (Array.isArray(parsedSigns)) return parsedSigns;
-    }
-  } catch (error) {
-    console.error("Could not load PSL signs:", error);
-  }
-
-  return INITIAL_SIGNS;
-}
-
-function getToday() {
-  return new Date().toLocaleDateString("en-GB", {
+  return new Date(dateValue).toLocaleDateString("en-GB", {
     day: "2-digit",
     month: "short",
     year: "numeric",
@@ -60,35 +30,71 @@ function getToday() {
 function PSLDictionary() {
   const navigate = useNavigate();
 
-  const [signs, setSigns] = useState(loadSigns);
+  const [signs, setSigns] = useState([]);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [processingId, setProcessingId] = useState(null);
+
   const entriesPerPage = 7;
 
-  // Save dictionary changes in localStorage.
+  // Load dictionary entries from the backend.
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(signs));
-  }, [signs]);
+    let isMounted = true;
+
+    async function loadSigns() {
+      try {
+        setIsLoading(true);
+        setError("");
+
+        const data = await getAllPSLSigns();
+
+        if (isMounted) {
+          setSigns(Array.isArray(data) ? data : []);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err.message || "Unable to load PSL dictionary entries.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadSigns();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const filteredSigns = useMemo(() => {
     return signs.filter((sign) => {
       const searchText = search.toLowerCase();
 
+      const word = (sign.word || "").toLowerCase();
+      const description = (sign.description || "").toLowerCase();
+      const category = (sign.category || "").toLowerCase();
+
       const matchesSearch =
-        (sign.label || "").toLowerCase().includes(searchText) ||
-        (sign.meaning || "").toLowerCase().includes(searchText);
+        word.includes(searchText) ||
+        description.includes(searchText);
 
-      let matchesFilter = true;
-
-      if (activeFilter === "Food") {
-        matchesFilter = sign.category === "Food & drink";
-      } else if (activeFilter === "Draft" || activeFilter === "Reviewed") {
-        matchesFilter = sign.status === activeFilter;
-      } else if (activeFilter !== "All") {
-        matchesFilter = sign.category === activeFilter;
-      }
+      const matchesFilter =
+        activeFilter === "All" ||
+        (activeFilter === "Food" &&
+          category === "food & drink") ||
+        (activeFilter === "Draft" &&
+          sign.status === "draft") ||
+        (activeFilter === "Reviewed" &&
+          sign.status === "reviewed") ||
+        category === activeFilter.toLowerCase();
 
       return matchesSearch && matchesFilter;
     });
@@ -104,57 +110,84 @@ function PSLDictionary() {
     currentPage * entriesPerPage
   );
 
-  const handleStatusUpdate = (id) => {
-    setSigns((previous) =>
-      previous.map((sign) =>
-        sign.id === id
-          ? {
-              ...sign,
-              status: sign.status === "Reviewed" ? "Draft" : "Reviewed",
-              date: getToday(),
-            }
-          : sign
-      )
-    );
+  const handleStatusUpdate = async (sign) => {
+    const newStatus =
+      sign.status === "reviewed" ? "draft" : "reviewed";
+
+    try {
+      setProcessingId(sign.id);
+      setActionError("");
+
+      const updatedSign = await updatePSLSign(sign.id, {
+        word: sign.word,
+        description: sign.description || "",
+        category: sign.category,
+        video_url: sign.video_url || null,
+        image_url: sign.image_url || null,
+        status: newStatus,
+      });
+
+      setSigns((previous) =>
+        previous.map((item) =>
+          item.id === sign.id ? updatedSign : item
+        )
+      );
+    } catch (err) {
+      setActionError(err.message || "Unable to update sign status.");
+    } finally {
+      setProcessingId(null);
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     const confirmed = window.confirm(
       "Are you sure you want to delete this sign entry?"
     );
 
     if (!confirmed) return;
 
-    const updatedSigns = signs.filter((sign) => sign.id !== id);
+    try {
+      setProcessingId(id);
+      setActionError("");
 
-    setSigns(updatedSigns);
+      await deletePSLSign(id);
 
-    const remainingFilteredCount = updatedSigns.filter((sign) => {
-      const searchText = search.toLowerCase();
+      const updatedSigns = signs.filter(
+        (sign) => sign.id !== id
+      );
 
-      const matchesSearch =
-        (sign.label || "").toLowerCase().includes(searchText) ||
-        (sign.meaning || "").toLowerCase().includes(searchText);
+      setSigns(updatedSigns);
 
-      let matchesFilter = true;
+      const remainingCount = updatedSigns.filter((sign) => {
+        const searchText = search.toLowerCase();
 
-      if (activeFilter === "Food") {
-        matchesFilter = sign.category === "Food & drink";
-      } else if (activeFilter === "Draft" || activeFilter === "Reviewed") {
-        matchesFilter = sign.status === activeFilter;
-      } else if (activeFilter !== "All") {
-        matchesFilter = sign.category === activeFilter;
-      }
+        const matchesSearch =
+          (sign.word || "").toLowerCase().includes(searchText) ||
+          (sign.description || "").toLowerCase().includes(searchText);
 
-      return matchesSearch && matchesFilter;
-    }).length;
+        const category = (sign.category || "").toLowerCase();
 
-    const newTotalPages = Math.max(
-      1,
-      Math.ceil(remainingFilteredCount / entriesPerPage)
-    );
+        const matchesFilter =
+          activeFilter === "All" ||
+          (activeFilter === "Food" && category === "food & drink") ||
+          (activeFilter === "Draft" && sign.status === "draft") ||
+          (activeFilter === "Reviewed" && sign.status === "reviewed") ||
+          category === activeFilter.toLowerCase();
 
-    setCurrentPage((page) => Math.min(page, newTotalPages));
+        return matchesSearch && matchesFilter;
+      }).length;
+
+      const newTotalPages = Math.max(
+        1,
+        Math.ceil(remainingCount / entriesPerPage)
+      );
+
+      setCurrentPage((page) => Math.min(page, newTotalPages));
+    } catch (err) {
+      setActionError(err.message || "Unable to delete sign entry.");
+    } finally {
+      setProcessingId(null);
+    }
   };
 
   const handleFilterChange = (filter) => {
@@ -169,9 +202,6 @@ function PSLDictionary() {
 
   return (
     <div className="psl-dictionary-page">
-      <AdminDemoNotice>
-        Dictionary entries and edits are stored in this browser only; they are not connected to a backend API.
-      </AdminDemoNotice>
       <div className="psl-page-heading">
         <div>
           <h1>PSL sign dictionary</h1>
@@ -188,6 +218,18 @@ function PSLDictionary() {
           + Add sign entry
         </button>
       </div>
+
+      {error && (
+        <p className="psl-form-error" role="alert">
+          {error}
+        </p>
+      )}
+
+      {actionError && (
+        <p className="psl-form-error" role="alert">
+          {actionError}
+        </p>
+      )}
 
       <div className="psl-search-section">
         <label htmlFor="psl-search">Search signs</label>
@@ -229,23 +271,37 @@ function PSLDictionary() {
             </thead>
 
             <tbody>
-              {visibleSigns.length > 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan="5" className="psl-empty-state">
+                    Loading PSL dictionary entries...
+                  </td>
+                </tr>
+              ) : visibleSigns.length > 0 ? (
                 visibleSigns.map((sign) => (
                   <tr key={sign.id}>
-                    <td className="psl-sign-label">{sign.label}</td>
+                    <td className="psl-sign-label">
+                      {sign.word}
+                    </td>
+
                     <td>{sign.category}</td>
-                    <td>{sign.date}</td>
+
+                    <td>
+                      {formatDate(sign.updated_at || sign.created_at)}
+                    </td>
+
                     <td>
                       <span
                         className={`psl-status-badge ${
-                          sign.status.toLowerCase().startsWith("draft")
+                          sign.status === "draft"
                             ? "draft"
                             : "reviewed"
                         }`}
                       >
-                        {sign.status}
+                        {sign.status === "draft" ? "Draft" : "Reviewed"}
                       </span>
                     </td>
+
                     <td>
                       <div className="psl-action-buttons">
                         <button
@@ -253,20 +309,25 @@ function PSLDictionary() {
                           onClick={() =>
                             navigate(`/admin/psl-dictionary/edit/${sign.id}`)
                           }
+                          disabled={processingId === sign.id}
                         >
                           Edit
                         </button>
 
                         <button
                           className="psl-action-btn"
-                          onClick={() => handleStatusUpdate(sign.id)}
+                          onClick={() => handleStatusUpdate(sign)}
+                          disabled={processingId === sign.id}
                         >
-                          Update
+                          {processingId === sign.id
+                            ? "Saving..."
+                            : "Update"}
                         </button>
 
                         <button
                           className="psl-action-btn delete"
                           onClick={() => handleDelete(sign.id)}
+                          disabled={processingId === sign.id}
                         >
                           Delete
                         </button>
@@ -277,7 +338,9 @@ function PSLDictionary() {
               ) : (
                 <tr>
                   <td colSpan="5" className="psl-empty-state">
-                    No sign entries found.
+                    {error
+                      ? "Could not load sign entries."
+                      : "No sign entries found."}
                   </td>
                 </tr>
               )}
@@ -292,8 +355,11 @@ function PSLDictionary() {
               ? 0
               : (currentPage - 1) * entriesPerPage + 1}
             –
-            {Math.min(currentPage * entriesPerPage, filteredSigns.length)} of{" "}
-            {filteredSigns.length} entries
+            {Math.min(
+              currentPage * entriesPerPage,
+              filteredSigns.length
+            )}{" "}
+            of {filteredSigns.length} entries
           </span>
 
           <div className="psl-pagination">
@@ -304,7 +370,10 @@ function PSLDictionary() {
               ‹
             </button>
 
-            {Array.from({ length: totalPages }, (_, index) => index + 1)
+            {Array.from(
+              { length: totalPages },
+              (_, index) => index + 1
+            )
               .slice(0, 5)
               .map((page) => (
                 <button
@@ -328,7 +397,7 @@ function PSLDictionary() {
 
       <div className="psl-data-note">
         <span className="psl-note-dot"></span>
-        Example data · Media pending validated asset
+        Connected to the ISHARA AI database
       </div>
     </div>
   );

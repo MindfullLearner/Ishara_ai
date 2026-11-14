@@ -1,4 +1,3 @@
-
 import os
 import hashlib
 import secrets
@@ -10,16 +9,32 @@ from urllib.parse import urlencode
 
 import jwt
 from dotenv import load_dotenv
-from fastapi import Depends, FastAPI, HTTPException, Query, status
+from fastapi import (
+    Depends,
+    FastAPI,
+    HTTPException,
+    Query,
+    UploadFile,
+    File,
+    status,
+)
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pwdlib import PasswordHash
 from sqlalchemy import func, text
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
-
+from pathlib import Path
+from uuid import uuid4
 from database import SessionLocal, engine
-from models import User, SystemLog
+from models import (
+    User,
+    SystemLog,
+    PSLDictionary,
+    KnowledgeArticle,
+    Base,
+)
 from schemas import (
     SignupRequest,
     LoginRequest,
@@ -34,7 +49,14 @@ from schemas import (
     ProfileUpdateRequest,
     ChangePasswordRequest,
     SystemLogResponse,
+    PSLDictionaryCreate,
+    PSLDictionaryUpdate,
+    PSLDictionaryResponse,
+    KnowledgeArticleCreate,
+    KnowledgeArticleUpdate,
+    KnowledgeArticleResponse,
 )
+
 
 load_dotenv()
 
@@ -59,6 +81,27 @@ app = FastAPI(
     title="ISHARA AI API",
     description="Backend API for the ISHARA AI project",
     version="0.2.0",
+)
+# ==========================================
+# MEDIA UPLOAD CONFIGURATION
+# ==========================================
+
+BASE_DIR = Path(__file__).resolve().parent
+
+UPLOAD_DIR = BASE_DIR / "uploads"
+VIDEO_DIR = UPLOAD_DIR / "videos"
+IMAGE_DIR = UPLOAD_DIR / "images"
+
+VIDEO_DIR.mkdir(parents=True, exist_ok=True)
+IMAGE_DIR.mkdir(parents=True, exist_ok=True)
+# Create any missing database tables
+Base.metadata.create_all(bind=engine)
+
+# Serve uploaded media files
+app.mount(
+    "/uploads",
+    StaticFiles(directory=str(UPLOAD_DIR)),
+    name="uploads",
 )
 
 app.add_middleware(
@@ -1098,6 +1141,479 @@ def get_admin_dashboard_summary(
         "translations": None,
         "active_today": None,
     }
+
+# ==========================================
+# PSL DICTIONARY ADMIN APIs
+# ==========================================
+
+@app.post(
+    "/api/admin/psl-dictionary",
+    response_model=PSLDictionaryResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_psl_sign(
+    request: PSLDictionaryCreate,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    new_sign = PSLDictionary(
+        word=request.word,
+        description=request.description,
+        category=request.category,
+        video_url=request.video_url,
+        image_url=request.image_url,
+        status=request.status,
+    )
+
+    try:
+        db.add(new_sign)
+        db.commit()
+        db.refresh(new_sign)
+
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to create PSL dictionary entry.",
+        )
+
+    record_system_log(
+        db=db,
+        severity="INFO",
+        event="PSL dictionary entry created",
+        source="admin.psl_dictionary.create",
+        details=f"Admin ID {admin.id} created sign ID {new_sign.id}.",
+    )
+
+    return new_sign
+
+
+@app.get(
+    "/api/admin/psl-dictionary",
+    response_model=list[PSLDictionaryResponse],
+)
+def list_psl_signs(
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return (
+        db.query(PSLDictionary)
+        .order_by(PSLDictionary.created_at.desc(), PSLDictionary.id.desc())
+        .all()
+    )
+
+
+@app.get(
+    "/api/admin/psl-dictionary/{sign_id}",
+    response_model=PSLDictionaryResponse,
+)
+def get_psl_sign(
+    sign_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    sign = (
+        db.query(PSLDictionary)
+        .filter(PSLDictionary.id == sign_id)
+        .first()
+    )
+
+    if sign is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="PSL dictionary entry not found.",
+        )
+
+    return sign
+
+
+@app.put(
+    "/api/admin/psl-dictionary/{sign_id}",
+    response_model=PSLDictionaryResponse,
+)
+def update_psl_sign(
+    sign_id: int,
+    request: PSLDictionaryUpdate,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    sign = (
+        db.query(PSLDictionary)
+        .filter(PSLDictionary.id == sign_id)
+        .first()
+    )
+
+    if sign is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="PSL dictionary entry not found.",
+        )
+
+    sign.word = request.word
+    sign.description = request.description
+    sign.category = request.category
+    sign.video_url = request.video_url
+    sign.image_url = request.image_url
+    sign.status = request.status
+
+    try:
+        db.commit()
+        db.refresh(sign)
+
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to update PSL dictionary entry.",
+        )
+
+    record_system_log(
+        db=db,
+        severity="INFO",
+        event="PSL dictionary entry updated",
+        source="admin.psl_dictionary.update",
+        details=f"Admin ID {admin.id} updated sign ID {sign.id}.",
+    )
+
+    return sign
+# ==========================================
+# PSL DICTIONARY MEDIA UPLOAD
+# ==========================================
+
+@app.post(
+    "/api/admin/psl-dictionary/{sign_id}/media",
+    response_model=PSLDictionaryResponse,
+)
+async def upload_psl_sign_media(
+    sign_id: int,
+    media_type: str,
+    file: UploadFile = File(...),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    # Find the PSL sign
+    sign = db.query(PSLDictionary).filter(
+        PSLDictionary.id == sign_id
+    ).first()
+
+    if not sign:
+        raise HTTPException(
+            status_code=404,
+            detail="PSL sign not found.",
+        )
+
+    # Validate media type
+    if media_type not in ["video", "image"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Media type must be video or image.",
+        )
+
+    # Allowed file types and size limits
+    if media_type == "video":
+        allowed_extensions = {".mp4", ".webm", ".mov"}
+        allowed_content_types = {
+            "video/mp4",
+            "video/webm",
+            "video/quicktime",
+        }
+        max_size = 50 * 1024 * 1024  # 50 MB
+        target_dir = VIDEO_DIR
+    else:
+        allowed_extensions = {".jpg", ".jpeg", ".png", ".webp"}
+        allowed_content_types = {
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+        }
+        max_size = 5 * 1024 * 1024  # 5 MB
+        target_dir = IMAGE_DIR
+
+    extension = Path(file.filename or "").suffix.lower()
+
+    if extension not in allowed_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported file extension.",
+        )
+
+    if file.content_type not in allowed_content_types:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported file content type.",
+        )
+
+    # Save file with a unique name
+    filename = f"{uuid4().hex}{extension}"
+    file_path = target_dir / filename
+    file_size = 0
+
+    try:
+        with file_path.open("wb") as buffer:
+            while chunk := await file.read(1024 * 1024):
+                file_size += len(chunk)
+
+                if file_size > max_size:
+                    raise HTTPException(
+                        status_code=413,
+                        detail="File is too large.",
+                    )
+
+                buffer.write(chunk)
+
+        media_url = f"/uploads/{media_type}s/{filename}"
+
+        if media_type == "video":
+            sign.video_url = media_url
+        else:
+            sign.image_url = media_url
+
+        db.commit()
+        db.refresh(sign)
+
+        record_system_log(
+            db,
+            severity="INFO",
+            event=f"PSL sign {media_type} uploaded",
+            source="admin.psl_dictionary.media",
+            details=f"{media_type.title()} uploaded for PSL sign ID {sign_id}.",
+        )
+
+        return sign
+
+    except HTTPException:
+        if file_path.exists():
+            file_path.unlink()
+        raise
+
+    except Exception:
+        db.rollback()
+
+        if file_path.exists():
+            file_path.unlink()
+
+        raise HTTPException(
+            status_code=500,
+            detail="Media upload failed.",
+        )
+
+    finally:
+        await file.close()
+
+@app.delete(
+    "/api/admin/psl-dictionary/{sign_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_psl_sign(
+    sign_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    sign = (
+        db.query(PSLDictionary)
+        .filter(PSLDictionary.id == sign_id)
+        .first()
+    )
+
+    if sign is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="PSL dictionary entry not found.",
+        )
+
+    deleted_sign_id = sign.id
+
+    try:
+        db.delete(sign)
+        db.commit()
+
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to delete PSL dictionary entry.",
+        )
+
+    record_system_log(
+        db=db,
+        severity="WARN",
+        event="PSL dictionary entry deleted",
+        source="admin.psl_dictionary.delete",
+        details=f"Admin ID {admin.id} deleted sign ID {deleted_sign_id}.",
+    )
+
+
+@app.post(
+    "/api/admin/knowledge-base",
+    response_model=KnowledgeArticleResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_knowledge_article(
+    request: KnowledgeArticleCreate,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    new_article = KnowledgeArticle(
+        title=request.title,
+        content=request.content,
+        category=request.category,
+        status=request.status,
+        author_id=admin.id,
+    )
+
+    try:
+        db.add(new_article)
+        db.commit()
+        db.refresh(new_article)
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to create knowledge base article.",
+        )
+
+    record_system_log(
+        db=db,
+        severity="INFO",
+        event="Knowledge base article created",
+        source="admin.knowledge_base.create",
+        details=f"Admin ID {admin.id} created article ID {new_article.id}.",
+    )
+
+    return new_article
+
+
+@app.get(
+    "/api/admin/knowledge-base",
+    response_model=list[KnowledgeArticleResponse],
+)
+def list_knowledge_articles(
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return (
+        db.query(KnowledgeArticle)
+        .order_by(
+            KnowledgeArticle.created_at.desc(),
+            KnowledgeArticle.id.desc(),
+        )
+        .all()
+    )
+
+
+@app.get(
+    "/api/admin/knowledge-base/{article_id}",
+    response_model=KnowledgeArticleResponse,
+)
+def get_knowledge_article(
+    article_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    article = (
+        db.query(KnowledgeArticle)
+        .filter(KnowledgeArticle.id == article_id)
+        .first()
+    )
+
+    if article is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Knowledge base article not found.",
+        )
+
+    return article
+
+
+@app.put(
+    "/api/admin/knowledge-base/{article_id}",
+    response_model=KnowledgeArticleResponse,
+)
+def update_knowledge_article(
+    article_id: int,
+    request: KnowledgeArticleUpdate,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    article = (
+        db.query(KnowledgeArticle)
+        .filter(KnowledgeArticle.id == article_id)
+        .first()
+    )
+
+    if article is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Knowledge base article not found.",
+        )
+
+    article.title = request.title
+    article.content = request.content
+    article.category = request.category
+    article.status = request.status
+
+    try:
+        db.commit()
+        db.refresh(article)
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to update knowledge base article.",
+        )
+
+    record_system_log(
+        db=db,
+        severity="INFO",
+        event="Knowledge base article updated",
+        source="admin.knowledge_base.update",
+        details=f"Admin ID {admin.id} updated article ID {article.id}.",
+    )
+
+    return article
+
+
+@app.delete(
+    "/api/admin/knowledge-base/{article_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+)
+def delete_knowledge_article(
+    article_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    article = (
+        db.query(KnowledgeArticle)
+        .filter(KnowledgeArticle.id == article_id)
+        .first()
+    )
+
+    if article is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Knowledge base article not found.",
+        )
+
+    deleted_article_id = article.id
+
+    try:
+        db.delete(article)
+        db.commit()
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="Unable to delete knowledge base article.",
+        )
+
+    record_system_log(
+        db=db,
+        severity="WARN",
+        event="Knowledge base article deleted",
+        source="admin.knowledge_base.delete",
+        details=f"Admin ID {admin.id} deleted article ID {deleted_article_id}.",
+    )
+
 @app.get(
     "/api/admin/system-logs",
     response_model=list[SystemLogResponse],
@@ -1115,3 +1631,127 @@ def get_system_logs(
     )
 
     return logs
+
+# ==========================================
+# PSL DICTIONARY MEDIA UPLOAD
+# ==========================================
+
+@app.post(
+    "/api/admin/psl-dictionary/{sign_id}/media",
+    response_model=PSLDictionaryResponse,
+)
+async def upload_psl_sign_media(
+    sign_id: int,
+    media_type: str,
+    file: UploadFile = File(...),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    # Find the PSL sign
+    sign = db.query(PSLDictionary).filter(
+        PSLDictionary.id == sign_id
+    ).first()
+
+    if not sign:
+        raise HTTPException(
+            status_code=404,
+            detail="PSL sign not found.",
+        )
+
+    # Validate media type
+    if media_type not in ["video", "image"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Media type must be video or image.",
+        )
+
+    # Allowed file types and size limits
+    if media_type == "video":
+        allowed_extensions = {".mp4", ".webm", ".mov"}
+        allowed_content_types = {
+            "video/mp4",
+            "video/webm",
+            "video/quicktime",
+        }
+        max_size = 50 * 1024 * 1024  # 50 MB
+        target_dir = VIDEO_DIR
+    else:
+        allowed_extensions = {".jpg", ".jpeg", ".png", ".webp"}
+        allowed_content_types = {
+            "image/jpeg",
+            "image/png",
+            "image/webp",
+        }
+        max_size = 5 * 1024 * 1024  # 5 MB
+        target_dir = IMAGE_DIR
+
+    extension = Path(file.filename or "").suffix.lower()
+
+    if extension not in allowed_extensions:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported file extension.",
+        )
+
+    if file.content_type not in allowed_content_types:
+        raise HTTPException(
+            status_code=400,
+            detail="Unsupported file content type.",
+        )
+
+    # Save file with a unique name
+    filename = f"{uuid4().hex}{extension}"
+    file_path = target_dir / filename
+    file_size = 0
+
+    try:
+        with file_path.open("wb") as buffer:
+            while chunk := await file.read(1024 * 1024):
+                file_size += len(chunk)
+
+                if file_size > max_size:
+                    raise HTTPException(
+                        status_code=413,
+                        detail="File is too large.",
+                    )
+
+                buffer.write(chunk)
+
+        media_url = f"/uploads/{media_type}s/{filename}"
+
+        if media_type == "video":
+            sign.video_url = media_url
+        else:
+            sign.image_url = media_url
+
+        db.commit()
+        db.refresh(sign)
+
+        record_system_log(
+            db,
+            severity="INFO",
+            event=f"PSL sign {media_type} uploaded",
+            source="admin.psl_dictionary.media",
+            details=f"{media_type.title()} uploaded for PSL sign ID {sign_id}.",
+        )
+
+        return sign
+
+    except HTTPException:
+        if file_path.exists():
+            file_path.unlink()
+        raise
+
+    except Exception:
+        db.rollback()
+
+        if file_path.exists():
+            file_path.unlink()
+
+        raise HTTPException(
+            status_code=500,
+            detail="Media upload failed.",
+        )
+
+    finally:
+        await file.close()

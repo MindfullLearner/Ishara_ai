@@ -189,3 +189,95 @@ class SystemLogResponse(BaseModel):
     request_id: str | None
     details: str
     timestamp: datetime
+
+# ==============================
+# PSL Dictionary Schemas
+# ==============================
+
+class PSLDictionaryCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    word: str = Field(min_length=1, max_length=150)
+    description: str | None = None
+    category: str = Field(min_length=1, max_length=100)
+    video_url: str | None = Field(default=None, max_length=500)
+    image_url: str | None = Field(default=None, max_length=500)
+    status: Literal["draft", "reviewed"] = "draft"
+
+    @field_validator("word", "category")
+    @classmethod
+    def validate_required_text(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("This field cannot be empty.")
+        return value
+
+    @field_validator("description")
+    @classmethod
+    def clean_description(cls, value: str | None) -> str | None:
+        return value.strip() if value else value
+
+
+class PSLDictionaryUpdate(PSLDictionaryCreate):
+    pass
+    status: Literal["draft", "reviewed"]
+
+
+class PSLDictionaryResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    word: str
+    description: str | None
+    category: str
+    video_url: str | None
+    image_url: str | None
+    created_at: datetime
+    updated_at: datetime
+    status: Literal["draft", "reviewed"] = "draft"
+
+
+# ==============================
+# Knowledge Base Schemas
+# ==============================
+
+class KnowledgeArticleCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    title: str = Field(min_length=1, max_length=200)
+    content: str = Field(min_length=1)
+    category: str = Field(min_length=1, max_length=100)
+    status: Literal["draft", "published"] = "draft"
+
+    @field_validator("title", "category")
+    @classmethod
+    def validate_required_text(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("This field cannot be empty.")
+        return value
+
+    @field_validator("content")
+    @classmethod
+    def validate_content(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Article content cannot be empty.")
+        return value
+
+
+class KnowledgeArticleUpdate(KnowledgeArticleCreate):
+    pass
+
+
+class KnowledgeArticleResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    title: str
+    content: str
+    category: str
+    author_id: int | None
+    status: Literal["draft", "published"]
+    created_at: datetime
+    updated_at: datetime

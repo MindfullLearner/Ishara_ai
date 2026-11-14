@@ -481,3 +481,45 @@
     display: flex;
   }
 }
+/* Image preview */
+.psl-image-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.psl-image-preview img {
+  width: 150px;
+  height: 120px;
+  object-fit: contain;
+  padding: 5px;
+  border: 1px solid #e5e7e8;
+  border-radius: 7px;
+  background: #f8fbfc;
+}
+
+.psl-image-preview span,
+.psl-video-preview span {
+  color: #89949c;
+  font-size: 9px;
+}
+
+/* Video preview */
+.psl-video-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.psl-video-preview video {
+  display: block;
+  width: 100%;
+  max-width: 340px;
+  max-height: 220px;
+  border-radius: 7px;
+  background: #263746;
+}
