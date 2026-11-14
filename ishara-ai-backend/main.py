@@ -56,6 +56,9 @@ from schemas import (
     KnowledgeArticleCreate,
     KnowledgeArticleUpdate,
     KnowledgeArticleResponse,
+    ProcessingActivityCreate,
+    ProcessingActivityUpdate,
+    ProcessingActivityResponse,
 )
 
 
@@ -1756,3 +1759,151 @@ async def upload_psl_sign_media(
 
     finally:
         await file.close()
+
+
+# ==========================================
+# PROCESSING ACTIVITY APIs
+# ==========================================
+
+@app.post(
+    "/api/processing-activity",
+    response_model=ProcessingActivityResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_processing_activity(
+    request: ProcessingActivityCreate,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    request_id = f"REQ-{datetime.now(timezone.utc).year}-{uuid4().hex[:8].upper()}"
+
+    new_activity = ProcessingActivity(
+        request_id=request_id,
+        user_id=user.id,
+        input_source=request.input_source,
+        output_type="psl_avatar_video",
+        status="pending",
+        clip_duration_seconds=request.clip_duration_seconds,
+    )
+
+    try:
+        db.add(new_activity)
+        db.commit()
+        db.refresh(new_activity)
+
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to create processing activity.",
+        )
+
+    record_system_log(
+        db=db,
+        severity="INFO",
+        event="PSL processing request created",
+        source="processing.create",
+        request_id=request_id,
+        details=f"User ID {user.id} submitted a PSL processing request.",
+    )
+
+    return new_activity
+
+
+@app.get(
+    "/api/admin/processing-activity",
+    response_model=list[ProcessingActivityResponse],
+)
+def list_processing_activities(
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    return (
+        db.query(ProcessingActivity)
+        .order_by(
+            ProcessingActivity.created_at.desc(),
+            ProcessingActivity.id.desc(),
+        )
+        .all()
+    )
+
+
+@app.get(
+    "/api/admin/processing-activity/{activity_id}",
+    response_model=ProcessingActivityResponse,
+)
+def get_processing_activity(
+    activity_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    activity = (
+        db.query(ProcessingActivity)
+        .filter(ProcessingActivity.id == activity_id)
+        .first()
+    )
+
+    if activity is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Processing activity not found.",
+        )
+
+    return activity
+
+
+@app.patch(
+    "/api/admin/processing-activity/{activity_id}",
+    response_model=ProcessingActivityResponse,
+)
+def update_processing_activity(
+    activity_id: int,
+    request: ProcessingActivityUpdate,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    activity = (
+        db.query(ProcessingActivity)
+        .filter(ProcessingActivity.id == activity_id)
+        .first()
+    )
+
+    if activity is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Processing activity not found.",
+        )
+
+    activity.status = request.status
+    activity.processing_time_seconds = request.processing_time_seconds
+    activity.error_message = request.error_message
+
+    if request.status in ["completed", "failed"]:
+        activity.completed_at = datetime.now(timezone.utc)
+    else:
+        activity.completed_at = None
+
+    try:
+        db.commit()
+        db.refresh(activity)
+
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unable to update processing activity.",
+        )
+
+    record_system_log(
+        db=db,
+        severity="INFO" if request.status != "failed" else "ERROR",
+        event="PSL processing status updated",
+        source="processing.update",
+        request_id=activity.request_id,
+        details=(
+            f"Admin ID {admin.id} updated request "
+            f"{activity.request_id} to {activity.status}."
+        ),
+    )
+
+    return activity

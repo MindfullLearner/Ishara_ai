@@ -219,5 +219,28 @@ export function deleteKnowledgeArticle(articleId) {
     }
   );
 }
+// ==============================
+// Processing Activity API
+// ==============================
+
+export function getAllProcessingActivities() {
+  return adminRequest("/api/admin/processing-activity");
+}
+
+export function getProcessingActivityById(activityId) {
+  return adminRequest(
+    `/api/admin/processing-activity/${encodeURIComponent(activityId)}`
+  );
+}
+
+export function updateProcessingActivity(activityId, activityData) {
+  return adminRequest(
+    `/api/admin/processing-activity/${encodeURIComponent(activityId)}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify(activityData),
+    }
+  );
+}
 
 

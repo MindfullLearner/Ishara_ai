@@ -1,54 +1,6 @@
-import { useMemo, useState } from "react";
-import AdminDemoNotice from "../../components/admin/AdminDemoNotice";
+import { useEffect, useMemo, useState } from "react";
+import { getAllProcessingActivities } from "../../api/admin";
 import "./ProcessingActivity.css";
-
-const INITIAL_JOBS = [
-  {
-    id: "REQ-2605-018",
-    source: "Camera",
-    submitted: "10:42:16",
-    duration: "00:24",
-    processingTime: "Waiting",
-    status: "Pending",
-    date: "2026-11-05",
-  },
-  {
-    id: "REQ-2605-017",
-    source: "Upload",
-    submitted: "10:41:58",
-    duration: "00:32",
-    processingTime: "00:18",
-    status: "Processing",
-    date: "2026-11-05",
-  },
-  {
-    id: "REQ-2605-016",
-    source: "Camera",
-    submitted: "10:40:12",
-    duration: "00:18",
-    processingTime: "00:09",
-    status: "Completed",
-    date: "2026-11-05",
-  },
-  {
-    id: "REQ-2605-015",
-    source: "Upload",
-    submitted: "10:39:46",
-    duration: "00:24",
-    processingTime: "00:04",
-    status: "Failed",
-    date: "2026-11-05",
-  },
-  {
-    id: "REQ-2605-014",
-    source: "Upload",
-    submitted: "10:38:22",
-    duration: "00:21",
-    processingTime: "00:11",
-    status: "Completed",
-    date: "2026-11-05",
-  },
-];
 
 const STATUS_OPTIONS = [
   "All statuses",
@@ -58,20 +10,173 @@ const STATUS_OPTIONS = [
   "Failed",
 ];
 
+function getStatusLabel(status) {
+  return status
+    ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()
+    : "Unknown";
+}
+
+function getPKTParts(dateValue) {
+  if (!dateValue) return null;
+
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) return null;
+
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Karachi",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+
+  return Object.fromEntries(parts.map((part) => [part.type, part.value]));
+}
+
+function formatPKTDate(dateValue) {
+  const parts = getPKTParts(dateValue);
+  if (!parts) return "—";
+
+  return `${parts.year}-${parts.month}-${parts.day}`;
+}
+
+function formatPKTTime(dateValue) {
+  const parts = getPKTParts(dateValue);
+  if (!parts) return "—";
+
+  return `${parts.hour}:${parts.minute}:${parts.second}`;
+}
+
+function formatDisplayDate(date) {
+  if (!date) return "All dates";
+
+  return new Date(`${date}T00:00:00`).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function formatDuration(seconds) {
+  if (seconds === null || seconds === undefined) return "—";
+
+  const totalSeconds = Math.max(0, Math.floor(Number(seconds)));
+  const minutes = Math.floor(totalSeconds / 60);
+  const remainingSeconds = totalSeconds % 60;
+
+  return `${String(minutes).padStart(2, "0")}:${String(
+    remainingSeconds
+  ).padStart(2, "0")}`;
+}
+
+function formatProcessingTime(seconds, status) {
+  if (seconds !== null && seconds !== undefined) {
+    return formatDuration(seconds);
+  }
+
+  if (status === "pending") return "Waiting";
+  if (status === "processing") return "In progress";
+
+  return "—";
+}
+
+function mapActivity(activity) {
+  const status = getStatusLabel(activity.status);
+
+  return {
+    id: activity.request_id,
+    activityId: activity.id,
+    source:
+      activity.input_source === "camera"
+        ? "Camera"
+        : activity.input_source === "upload"
+          ? "Upload"
+          : activity.input_source || "—",
+    submitted: formatPKTTime(activity.created_at),
+    duration: formatDuration(activity.clip_duration_seconds),
+    processingTime: formatProcessingTime(
+      activity.processing_time_seconds,
+      activity.status
+    ),
+    status,
+    date: formatPKTDate(activity.created_at),
+    errorMessage: activity.error_message,
+    createdAt: activity.created_at,
+  };
+}
+
 function ProcessingActivity() {
-  const [jobs] = useState(INITIAL_JOBS);
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All statuses");
-  const [dateFilter, setDateFilter] = useState("2026-11-05");
+  const [dateFilter, setDateFilter] = useState("");
+
   const [appliedFilters, setAppliedFilters] = useState({
     search: "",
     status: "All statuses",
-    date: "2026-11-05",
+    date: "",
   });
 
-  const [selectedJob, setSelectedJob] = useState(
-    INITIAL_JOBS.find((job) => job.status === "Failed")
-  );
+  const [selectedJob, setSelectedJob] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadActivities() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const data = await getAllProcessingActivities();
+
+        if (!isMounted) return;
+
+        const records = Array.isArray(data) ? data : [];
+        const mappedJobs = records.map(mapActivity);
+
+        setJobs(mappedJobs);
+
+        setSelectedJob((currentSelected) => {
+          if (!currentSelected) {
+            return (
+              mappedJobs.find((job) => job.status === "Failed") ||
+              mappedJobs[0] ||
+              null
+            );
+          }
+
+          return (
+            mappedJobs.find(
+              (job) => job.activityId === currentSelected.activityId
+            ) || null
+          );
+        });
+      } catch (err) {
+        if (isMounted) {
+          setError(
+            err.message || "Unable to load processing activity records."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadActivities();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const summary = useMemo(() => {
     return {
@@ -101,7 +206,7 @@ function ProcessingActivity() {
 
   const handleApplyFilters = () => {
     setAppliedFilters({
-      search,
+      search: search.trim(),
       status: statusFilter,
       date: dateFilter,
     });
@@ -111,6 +216,7 @@ function ProcessingActivity() {
     setSearch("");
     setStatusFilter("All statuses");
     setDateFilter("");
+
     setAppliedFilters({
       search: "",
       status: "All statuses",
@@ -139,12 +245,9 @@ function ProcessingActivity() {
       job.date,
     ]);
 
-    const csvContent = [
-      headers,
-      ...rows,
-    ]
+    const csvContent = [headers, ...rows]
       .map((row) =>
-        row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(",")
+        row.map((value) => `"${String(value ?? "").replace(/"/g, '""')}"`).join(",")
       )
       .join("\n");
 
@@ -162,27 +265,14 @@ function ProcessingActivity() {
     URL.revokeObjectURL(url);
   };
 
-  const formatDate = (date) => {
-    if (!date) return "All dates";
-
-    return new Date(`${date}T00:00:00`).toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  };
-
   return (
     <div className="processing-page">
-      <AdminDemoNotice>
-        The activity rows and counts below are sample data, not a live processing queue.
-      </AdminDemoNotice>
       {/* Page heading */}
       <div className="processing-heading">
         <h1>Translation &amp; processing activity</h1>
         <p>
-          Sample data · {formatDate(appliedFilters.date)} · Times shown in Pakistan Standard
-          Time (PKT).
+          Live processing records · {formatDisplayDate(appliedFilters.date)} ·
+          Times shown in Pakistan Standard Time (PKT).
         </p>
       </div>
 
@@ -245,7 +335,9 @@ function ProcessingActivity() {
             onChange={(event) => setStatusFilter(event.target.value)}
           >
             {STATUS_OPTIONS.map((status) => (
-              <option key={status}>{status}</option>
+              <option key={status} value={status}>
+                {status}
+              </option>
             ))}
           </select>
         </div>
@@ -277,14 +369,30 @@ function ProcessingActivity() {
         </button>
       </div>
 
+      {/* API error */}
+      {error && (
+        <div className="processing-error-panel">
+          <div className="processing-error-heading">
+            <span className="processing-error-icon">!</span>
+            <strong>Unable to load processing activity</strong>
+          </div>
+          <p>{error}</p>
+        </div>
+      )}
+
       {/* Recent jobs table */}
       <section className="processing-table-card">
         <div className="processing-table-heading">
           <h2>Queue &amp; recent jobs</h2>
           <div>
             <span>{filteredJobs.length} requests</span>
-            <button type="button" className="processing-apply-btn" onClick={handleExportCSV}>
-              Export sample CSV
+            <button
+              type="button"
+              className="processing-apply-btn"
+              onClick={handleExportCSV}
+              disabled={loading || filteredJobs.length === 0}
+            >
+              Export CSV
             </button>
           </div>
         </div>
@@ -303,11 +411,24 @@ function ProcessingActivity() {
             </thead>
 
             <tbody>
-              {filteredJobs.length > 0 ? (
+              {loading ? (
+                <tr>
+                  <td colSpan="6" className="processing-empty">
+                    Loading processing activities...
+                  </td>
+                </tr>
+              ) : filteredJobs.length > 0 ? (
                 filteredJobs.map((job) => (
                   <tr
-                    key={job.id}
-                    className={job.status === "Failed" ? "failed-row" : ""}
+                    key={job.activityId}
+                    className={[
+                      job.status === "Failed" ? "failed-row" : "",
+                      selectedJob?.activityId === job.activityId
+                        ? "selected-row"
+                        : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
                     onClick={() => setSelectedJob(job)}
                   >
                     <td className="processing-request-id">{job.id}</td>
@@ -328,7 +449,9 @@ function ProcessingActivity() {
               ) : (
                 <tr>
                   <td colSpan="6" className="processing-empty">
-                    No processing requests found.
+                    {jobs.length === 0
+                      ? "No processing activity records are available yet."
+                      : "No processing requests match your filters."}
                   </td>
                 </tr>
               )}
@@ -337,25 +460,22 @@ function ProcessingActivity() {
         </div>
 
         <div className="processing-table-footer">
-          Completed means processing finished; it does not mean the
-          translation is expert/community validated.
+          Completed means PSL processing finished; it does not mean the result
+          is expert/community validated.
         </div>
       </section>
 
-      {/* Failure details */}
+      {/* Selected request details */}
       {selectedJob && selectedJob.status === "Failed" && (
         <div className="processing-error-panel">
           <div className="processing-error-heading">
             <span className="processing-error-icon">!</span>
-            <strong>
-              {selectedJob.id} · Video could not be decoded
-            </strong>
+            <strong>{selectedJob.id} · Processing failed</strong>
           </div>
 
           <p>
-            <strong>UNSUPPORTED_VIDEO</strong> — Processing stopped after{" "}
-            {selectedJob.processingTime}. Ask the user to export a playable
-            video and upload it again. No translation was produced.
+            {selectedJob.errorMessage ||
+              "No failure details were provided for this request."}
           </p>
         </div>
       )}
@@ -364,8 +484,10 @@ function ProcessingActivity() {
         <div className="processing-selected-panel">
           <strong>{selectedJob.id}</strong>
           <span>
-            Selected request status: {selectedJob.status}. No additional
-            failure details are available.
+            Selected request status: {selectedJob.status}.{" "}
+            {selectedJob.status === "Completed"
+              ? "PSL processing has finished."
+              : "No failure details are available."}
           </span>
         </div>
       )}
