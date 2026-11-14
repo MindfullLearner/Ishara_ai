@@ -1,7 +1,10 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import AdminDemoNotice from "../../../components/admin/AdminDemoNotice";
+import {
+  createKnowledgeArticle,
+  updateKnowledgeArticle,
+} from "../../../api/admin";
 import "./ArticleForm.css";
 
 const CATEGORIES = [
@@ -24,17 +27,24 @@ const INITIAL_FORM = {
 function ArticleForm({ mode = "add", article = null }) {
   const navigate = useNavigate();
   const isEdit = mode === "edit";
+
   const [formData, setFormData] = useState(() =>
     isEdit && article
       ? {
-        title: article.title || "",
-        summary: article.summary || article.description || "",
-        body: article.body || article.description || "",
-        category: article.category || "Video guidance",
-        status: article.status || "Draft",
-      }
+          title: article.title || "",
+          summary: "",
+          body: article.content || "",
+          category: article.category || "Video guidance",
+          status:
+            article.status?.toLowerCase() === "published"
+              ? "Published"
+              : "Draft",
+        }
       : INITIAL_FORM
   );
+
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -47,7 +57,6 @@ function ArticleForm({ mode = "add", article = null }) {
 
   const insertFormatting = (tag) => {
     const textarea = document.getElementById("article-body");
-
     if (!textarea) return;
 
     const start = textarea.selectionStart;
@@ -79,61 +88,59 @@ function ArticleForm({ mode = "add", article = null }) {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setError("");
 
-    if (!formData.title.trim() || !formData.summary.trim() || !formData.body.trim()) {
+    if (
+      !formData.title.trim() ||
+      !formData.body.trim() ||
+      !formData.category.trim()
+    ) {
+      setError("Please complete all required fields.");
       return;
     }
 
-    const savedArticles = JSON.parse(
-      localStorage.getItem("isharaKnowledgeArticles") || "[]"
-    );
+    const articleData = {
+      title: formData.title.trim(),
+      content: formData.body.trim(),
+      category: formData.category,
+      status: formData.status.toLowerCase(),
+    };
 
-    const now = new Date().toLocaleDateString("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    });
+    try {
+      setSaving(true);
 
-    if (isEdit && article) {
-      const updatedArticle = {
-        ...article,
-        ...formData,
-        description: formData.summary,
-        date: now,
-      };
+      if (isEdit && article) {
+        await updateKnowledgeArticle(article.id, articleData);
+      } else {
+        await createKnowledgeArticle(articleData);
+      }
 
-      const updatedArticles = savedArticles.map((item) =>
-        String(item.id) === String(article.id) ? updatedArticle : item
-      );
-
-      localStorage.setItem(
-        "isharaKnowledgeArticles",
-        JSON.stringify(updatedArticles)
-      );
-    } else {
-      const newArticle = {
-        id: Date.now(),
-        ...formData,
-        description: formData.summary,
-        date: now,
-      };
-
-      localStorage.setItem(
-        "isharaKnowledgeArticles",
-        JSON.stringify([newArticle, ...savedArticles])
-      );
+      navigate("/admin/knowledge-base", {
+        state: {
+          message: isEdit
+            ? "Article updated successfully."
+            : "Article created successfully.",
+        },
+      });
+    } catch (err) {
+      setError(err.message || "Unable to save the article. Please try again.");
+    } finally {
+      setSaving(false);
     }
-
-    navigate("/admin/knowledge-base");
   };
+
+  const lastUpdated = article?.updated_at
+    ? new Date(article.updated_at).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+    : "Not available";
 
   return (
     <div className="article-form-page">
-      <AdminDemoNotice>
-        Article changes are saved in this browser only and are not sent to a backend API.
-      </AdminDemoNotice>
       <button
         type="button"
         className="article-back-link"
@@ -150,6 +157,12 @@ function ArticleForm({ mode = "add", article = null }) {
             : "Write practical, accessible guidance for people using Ishara AI."}
         </p>
       </div>
+
+      {error && (
+        <div className="article-error-message" role="alert">
+          {error}
+        </div>
+      )}
 
       <form className="article-form-layout" onSubmit={handleSubmit}>
         <section className="article-form-main">
@@ -169,15 +182,14 @@ function ArticleForm({ mode = "add", article = null }) {
             </div>
 
             <div className="article-field">
-              <label htmlFor="article-summary">Summary *</label>
+              <label htmlFor="article-summary">Summary</label>
               <textarea
                 id="article-summary"
                 name="summary"
                 value={formData.summary}
                 onChange={handleChange}
-                placeholder="Write a short summary of this article"
+                placeholder="Write a short summary of this article (not saved)"
                 rows="2"
-                required
               />
             </div>
 
@@ -188,23 +200,43 @@ function ArticleForm({ mode = "add", article = null }) {
                 <div className="article-editor-toolbar">
                   <span>Paragraph</span>
 
-                  <button type="button" onClick={() => insertFormatting("bold")} title="Bold">
+                  <button
+                    type="button"
+                    onClick={() => insertFormatting("bold")}
+                    title="Bold"
+                  >
                     <b>B</b>
                   </button>
 
-                  <button type="button" onClick={() => insertFormatting("italic")} title="Italic">
+                  <button
+                    type="button"
+                    onClick={() => insertFormatting("italic")}
+                    title="Italic"
+                  >
                     <i>I</i>
                   </button>
 
-                  <button type="button" onClick={() => insertFormatting("underline")} title="Underline">
+                  <button
+                    type="button"
+                    onClick={() => insertFormatting("underline")}
+                    title="Underline"
+                  >
                     <u>U</u>
                   </button>
 
-                  <button type="button" onClick={() => insertFormatting("bullet")} title="Bullet">
+                  <button
+                    type="button"
+                    onClick={() => insertFormatting("bullet")}
+                    title="Bullet"
+                  >
                     •
                   </button>
 
-                  <button type="button" onClick={() => insertFormatting("link")} title="Insert link">
+                  <button
+                    type="button"
+                    onClick={() => insertFormatting("link")}
+                    title="Insert link"
+                  >
                     🔗
                   </button>
                 </div>
@@ -229,18 +261,25 @@ function ArticleForm({ mode = "add", article = null }) {
                   type="button"
                   className="article-cancel-btn"
                   onClick={() => navigate("/admin/knowledge-base")}
+                  disabled={saving}
                 >
                   Cancel
                 </button>
 
-                <button type="submit" className="article-save-btn">
-                  {isEdit
-                    ? formData.status === "Published"
-                      ? "Update article"
-                      : "Save draft"
-                    : formData.status === "Published"
-                      ? "Publish article"
-                      : "Save draft"}
+                <button
+                  type="submit"
+                  className="article-save-btn"
+                  disabled={saving}
+                >
+                  {saving
+                    ? "Saving..."
+                    : isEdit
+                      ? formData.status === "Published"
+                        ? "Update article"
+                        : "Save draft"
+                      : formData.status === "Published"
+                        ? "Publish article"
+                        : "Save draft"}
                 </button>
               </div>
             </div>
@@ -290,7 +329,9 @@ function ArticleForm({ mode = "add", article = null }) {
                   Draft
                 </label>
 
-                <label className={formData.status === "Published" ? "selected" : ""}>
+                <label
+                  className={formData.status === "Published" ? "selected" : ""}
+                >
                   <input
                     type="radio"
                     name="status"
@@ -311,7 +352,7 @@ function ArticleForm({ mode = "add", article = null }) {
             {isEdit && article && (
               <div className="article-metadata">
                 <span>Article ID: KB-00{article.id}</span>
-                <span>Last updated: {article.date || "Not available"}</span>
+                <span>Last updated: {lastUpdated}</span>
               </div>
             )}
           </div>
@@ -339,7 +380,9 @@ function ArticleForm({ mode = "add", article = null }) {
             <h2>Writing checklist</h2>
             <p>Use short, descriptive headings.</p>
             <p>Explain actions in plain language.</p>
-            <p>Do not make unsupported accuracy claims or insert sign examples.</p>
+            <p>
+              Do not make unsupported accuracy claims or insert sign examples.
+            </p>
           </div>
 
           {isEdit && (

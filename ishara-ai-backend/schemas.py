@@ -281,3 +281,37 @@ class KnowledgeArticleResponse(BaseModel):
     status: Literal["draft", "published"]
     created_at: datetime
     updated_at: datetime
+
+# ==============================
+# Processing Activity Schemas
+# ==============================
+
+class ProcessingActivityCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    input_source: Literal["camera", "upload"]
+    clip_duration_seconds: int | None = Field(default=None, ge=0)
+
+
+class ProcessingActivityUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    status: Literal["pending", "processing", "completed", "failed"]
+    processing_time_seconds: float | None = Field(default=None, ge=0)
+    error_message: str | None = None
+
+
+class ProcessingActivityResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    request_id: str
+    user_id: int | None
+    input_source: Literal["camera", "upload"]
+    output_type: str
+    status: Literal["pending", "processing", "completed", "failed"]
+    clip_duration_seconds: int | None
+    processing_time_seconds: float | None
+    error_message: str | None
+    created_at: datetime
+    completed_at: datetime | None

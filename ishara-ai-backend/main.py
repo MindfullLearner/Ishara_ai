@@ -33,6 +33,7 @@ from models import (
     SystemLog,
     PSLDictionary,
     KnowledgeArticle,
+    ProcessingActivity,
     Base,
 )
 from schemas import (
