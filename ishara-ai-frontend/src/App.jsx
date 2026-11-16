@@ -13,6 +13,10 @@ import VerifyEmail from "./pages/VerifyEmail";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
+import LiveCamera from "./pages/LiveCamera";
+import UploadVideo from "./pages/UploadVideo";
+import TranslationHistory from "./pages/TranslationHistory";
+import UserProfileSettings from "./pages/UserProfileSettings";
 import AdminLayout from "./components/admin/AdminLayout";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserManagement from "./pages/admin/UserManagement";
@@ -140,6 +144,42 @@ function App() {
           element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/live-camera"
+          element={
+            <ProtectedRoute>
+              <LiveCamera />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/upload-video"
+          element={
+            <ProtectedRoute>
+              <UploadVideo />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/translation-history"
+          element={
+            <ProtectedRoute>
+              <TranslationHistory />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/dashboard/profile-settings"
+          element={
+            <ProtectedRoute>
+              <UserProfileSettings />
             </ProtectedRoute>
           }
         />

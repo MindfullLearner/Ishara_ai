@@ -1,0 +1,154 @@
+.ish-upload-page { min-height: 100vh; padding: clamp(1rem, 3.2vw, 2.5rem); background: #f4f5f7; }
+.ish-upload-shell { width: min(100%, 1120px); min-height: calc(100vh - clamp(2rem, 6.4vw, 5rem)); margin: 0 auto; padding: clamp(1rem, 2.2vw, 1.5rem); background: #f1eadf; }
+.ish-upload-file-input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; clip-path: inset(50%); }
+.ish-upload-shell:has(.ish-upload-file-input:focus-visible) .ish-upload-dropzone { outline: 3px solid rgba(11,132,180,.3); outline-offset: 2px; }
+
+.ish-upload-header { min-height: 58px; padding: .5rem .9rem; display: flex; align-items: center; gap: 1.25rem; border: 1px solid rgba(255,255,255,.75); border-radius: 14px; background: #faf8f4; box-shadow: 0 5px 16px rgba(49,57,60,.06); }
+.ish-upload-brand { flex: 0 0 auto; color: #0783b5; font: 800 1.12rem/1 var(--ish-font-display),sans-serif; letter-spacing: -.06em; text-decoration: none; }
+.ish-upload-nav { min-width: 0; display: flex; align-items: center; gap: .35rem; }
+.ish-upload-nav-item { min-height: 32px; padding: .5rem .85rem; display: inline-flex; align-items: center; border-radius: 8px; color: #62717b; font-size: .73rem; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.ish-upload-nav a:hover:not(.is-active) { background: #f0f4f4; }
+.ish-upload-nav-item.is-active { color: #124d63; background: #fff1a8; }
+.ish-upload-nav-item.is-unavailable { color: #7b858b; }
+.ish-upload-account { min-width: 0; margin-left: auto; padding: .25rem .5rem; display: flex; align-items: center; gap: .45rem; border: 1px solid #eee9df; border-radius: 9px; }
+.ish-upload-avatar { width: 1.5rem; height: 1.5rem; flex: 0 0 auto; display: grid; place-items: center; border-radius: 50%; color: #433505; background: #ffd817; font-size: .65rem; font-weight: 800; }
+.ish-upload-account-name { max-width: 120px; overflow: hidden; color: #34424c; font-size: .72rem; font-weight: 700; text-overflow: ellipsis; white-space: nowrap; }
+.ish-upload-signout { padding: .3rem .45rem; border: 0; border-radius: 6px; color: #087daa; background: transparent; font-size: .68rem; font-weight: 700; cursor: pointer; }
+.ish-upload-signout:hover { background: #e6f3f7; }
+
+.ish-upload-heading { margin: 1rem 0 .9rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.ish-upload-heading h1 { margin: 0 0 .25rem; color: #2e3c46; font: 800 1.35rem/1.25 var(--ish-font-display),sans-serif; }
+.ish-upload-heading p { margin: 0; color: #60717a; font-size: .74rem; }
+.ish-upload-back { min-height: 2rem; padding: .5rem .85rem; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #e9e5dc; border-radius: 8px; color: #087daa; background: #faf8f4; font-size: .68rem; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.ish-upload-back:hover { background: #fff; }
+
+.ish-upload-layout { display: grid; grid-template-columns: minmax(0, 2.1fr) minmax(245px, .85fr); align-items: start; gap: 1rem; }
+.ish-upload-main-card { min-width: 0; padding: .85rem; border-radius: 16px; background: #fff; box-shadow: 0 6px 16px rgba(49,57,60,.06); }
+.ish-upload-main-card.has-error { border-color: #f3c8c2; }
+.ish-upload-card-heading { min-height: 1.45rem; margin-bottom: .55rem; display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.ish-upload-card-heading > strong { display: inline-flex; align-items: center; gap: .4rem; color: #263844; font-size: .72rem; }
+.ish-upload-icon { width: 1rem; height: 1rem; flex: 0 0 auto; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.ish-upload-card-heading > strong .ish-upload-icon { color: #0786b6; }
+.ish-upload-status { padding: .32rem .55rem; display: inline-flex; align-items: center; gap: .35rem; border-radius: 20px; color: #6f7c82; background: #f0f2f1; font-size: .62rem; font-weight: 700; white-space: nowrap; }
+.ish-upload-status i { width: .4rem; height: .4rem; border-radius: 50%; background: currentColor; }
+.ish-upload-status.is-ready { color: #11745f; background: #e4f7ef; }
+.ish-upload-status.is-error { color: #b53e39; background: #ffebe8; }
+
+.ish-upload-dropzone { min-height: 270px; padding: 1.2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .48rem; border: 1px dashed #45afd0; border-radius: 12px; color: #34454d; background: #e2f2f5; text-align: center; cursor: pointer; transition: border-color .16s ease,background .16s ease; }
+.ish-upload-dropzone:hover, .ish-upload-dropzone.is-dragging { border-color: #0786b6; background: #d8eef3; }
+.ish-upload-dropzone.is-error { border-color: #eda39b; background: #fde8e4; }
+.ish-upload-dropzone:focus-within { outline: 3px solid rgba(11,132,180,.22); outline-offset: 2px; }
+.ish-upload-drop-icon { width: 2.7rem; height: 2.7rem; margin-bottom: .15rem; display: grid; place-items: center; border-radius: 12px; color: #0786b6; background: #fff; }
+.ish-upload-drop-icon .ish-upload-icon { width: 1.3rem; height: 1.3rem; }
+.ish-upload-dropzone.is-error .ish-upload-drop-icon { color: #bd3e35; }
+.ish-upload-dropzone > strong { color: #34454d; font: 800 1rem/1.35 var(--ish-font-display),sans-serif; }
+.ish-upload-dropzone > span:not(.ish-upload-drop-icon):not(.ish-upload-browse) { color: #66767e; font-size: .67rem; line-height: 1.45; }
+.ish-upload-browse { min-width: 130px; min-height: 2.3rem; margin-top: .25rem; padding: .65rem 1rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; color: #fff; background: #0786b6; font-size: .67rem; font-weight: 700; }
+.ish-upload-dropzone:hover .ish-upload-browse { background: #076b94; }
+.ish-upload-formats { margin-top: .15rem; color: #5d6e76; font-size: .6rem; }
+
+.ish-upload-preview-wrap { display: grid; gap: .55rem; }
+.ish-upload-video-frame { position: relative; min-height: 220px; overflow: hidden; display: flex; align-items: center; justify-content: center; border-radius: 11px; background: #26323a; }
+.ish-upload-video { display: block; width: 100%; max-height: 370px; aspect-ratio: 16 / 9; object-fit: contain; background: #26323a; }
+.ish-upload-video-label { position: absolute; z-index: 1; top: .65rem; left: .7rem; color: rgba(255,255,255,.86); font-size: .53rem; font-weight: 600; pointer-events: none; }
+.ish-upload-file-details { min-width: 0; display: flex; align-items: center; gap: .55rem; }
+.ish-upload-file-icon { width: 2rem; height: 2rem; flex: 0 0 auto; display: grid; place-items: center; border-radius: 8px; color: #0786b6; background: #e3f2f5; }
+.ish-upload-file-icon .ish-upload-icon { width: 1.1rem; height: 1.1rem; }
+.ish-upload-file-details > div { min-width: 0; display: grid; gap: .16rem; }
+.ish-upload-file-details strong { overflow: hidden; color: #35454e; font-size: .68rem; text-overflow: ellipsis; white-space: nowrap; }
+.ish-upload-file-details > div > span { color: #718087; font-size: .6rem; }
+.ish-upload-selection-actions { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+.ish-upload-selection-actions > div { display: flex; align-items: center; gap: .45rem; }
+.ish-upload-button { min-height: 2.25rem; padding: .55rem .85rem; border: 1px solid transparent; border-radius: 8px; font-size: .65rem; font-weight: 700; cursor: pointer; transition: background .16s ease,transform .16s ease; }
+.ish-upload-button:hover:not(:disabled) { transform: translateY(-1px); }
+.ish-upload-button:focus-visible, .ish-upload-back:focus-visible, .ish-upload-signout:focus-visible { outline: none; box-shadow: var(--ish-focus); }
+.ish-upload-button.is-primary { min-width: 150px; color: #fff; background: #0786b6; }
+.ish-upload-button.is-primary:hover:not(:disabled) { background: #076b94; }
+.ish-upload-button.is-secondary { border-color: #e8e3da; color: #087daa; background: #faf8f4; }
+.ish-upload-button.is-secondary:hover:not(:disabled) { background: #f0f7f8; }
+.ish-upload-button:disabled { color: #75838a; background: #e7ecee; cursor: not-allowed; }
+.ish-upload-empty-footer { min-height: 52px; padding-top: .65rem; display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
+.ish-upload-empty-footer > span { color: #697980; font-size: .62rem; }
+
+.ish-upload-alert { margin-top: .15rem; padding: .65rem .75rem; display: flex; align-items: flex-start; gap: .45rem; border-radius: 9px; }
+.ish-upload-alert > .ish-upload-icon { margin-top: .03rem; }
+.ish-upload-alert > div { display: grid; gap: .12rem; }
+.ish-upload-alert strong { font-size: .64rem; }
+.ish-upload-alert span { font-size: .59rem; line-height: 1.45; }
+.ish-upload-alert.is-error { border: 1px solid #f2d0cc; color: #963e38; background: #fde8e4; }
+.ish-upload-alert.is-info { border: 1px solid #e9dca7; color: #6d590b; background: #fff5c9; }
+
+.ish-upload-aside { display: grid; gap: .75rem; }
+.ish-upload-tips-card { padding: .8rem; border-radius: 14px; color: #34464e; background: #e2f2f5; }
+.ish-upload-tips-card h2, .ish-upload-side-note h2 { margin: 0 0 .6rem; display: flex; align-items: center; gap: .4rem; color: #33444d; font-size: .7rem; }
+.ish-upload-tips-card h2 .ish-upload-icon, .ish-upload-side-note h2 .ish-upload-icon { color: #0786b6; }
+.ish-upload-tips-card ul { margin: 0; padding: 0; display: grid; gap: .65rem; list-style: none; }
+.ish-upload-tip { display: flex; align-items: flex-start; gap: .45rem; }
+.ish-upload-tip > .ish-upload-icon { width: .85rem; height: .85rem; margin-top: .08rem; color: #0786b6; }
+.ish-upload-tip div { display: grid; gap: .14rem; }
+.ish-upload-tip strong { color: #34454d; font-size: .61rem; }
+.ish-upload-tip span { color: #607179; font-size: .58rem; line-height: 1.4; }
+.ish-upload-side-note { padding: .8rem; border: 1px solid rgba(231,226,216,.8); border-radius: 14px; background: #faf8f4; }
+.ish-upload-side-note h2 { margin-bottom: .35rem; }
+.ish-upload-side-note p { margin: 0 0 .5rem; color: #66767e; font-size: .6rem; line-height: 1.5; }
+.ish-upload-side-note > span { color: #0786b6; font-size: .56rem; font-weight: 700; }
+
+.ish-upload-steps { margin-top: .9rem; padding: .65rem .8rem; display: flex; align-items: center; justify-content: space-between; gap: .5rem; border: 1px solid rgba(255,255,255,.75); border-radius: 12px; background: #faf8f4; }
+.ish-upload-steps > span { display: inline-flex; align-items: center; gap: .4rem; color: #738087; font-size: .61rem; }
+.ish-upload-steps > span > i { width: 1.5rem; height: 1.5rem; display: grid; place-items: center; border-radius: 7px; color: #0786b6; background: #e4f3f6; font-style: normal; }
+.ish-upload-steps > span > i .ish-upload-icon { width: .85rem; height: .85rem; }
+.ish-upload-steps > span.is-current { color: #34454d; font-weight: 700; }
+.ish-upload-steps > span.is-current > i { color: #69540b; background: #fff0a6; }
+.ish-upload-footnote { margin: .6rem 0 0; display: flex; align-items: center; justify-content: center; gap: .35rem; color: #718087; font-size: .58rem; text-align: center; }
+.ish-upload-footnote .ish-upload-icon { width: .75rem; height: .75rem; }
+
+@media (max-width: 820px) {
+  .ish-upload-page { padding: 1rem; }
+  .ish-upload-shell { min-height: calc(100vh - 2rem); }
+  .ish-upload-header { flex-wrap: wrap; gap: .65rem 1rem; }
+  .ish-upload-nav { order: 3; width: 100%; }
+  .ish-upload-nav-item { flex: 1; justify-content: center; padding-right: .45rem; padding-left: .45rem; font-size: .68rem; }
+  .ish-upload-layout { grid-template-columns: minmax(0, 1.65fr) minmax(215px, .9fr); gap: .75rem; }
+  .ish-upload-dropzone { min-height: 250px; }
+}
+
+@media (max-width: 640px) {
+  .ish-upload-page { padding: 0; background: #f1eadf; }
+  .ish-upload-shell { min-height: 100vh; padding: .75rem; }
+  .ish-upload-header { padding: .6rem; gap: .5rem; }
+  .ish-upload-brand { font-size: 1.02rem; }
+  .ish-upload-account { gap: .3rem; padding: .2rem .3rem; }
+  .ish-upload-account-name { max-width: 82px; font-size: .66rem; }
+  .ish-upload-signout { font-size: .64rem; }
+  .ish-upload-nav { gap: .15rem; }
+  .ish-upload-nav-item { min-height: 30px; padding: .4rem .25rem; font-size: .6rem; }
+  .ish-upload-heading { margin-top: .8rem; align-items: flex-start; }
+  .ish-upload-heading h1 { font-size: 1.2rem; }
+  .ish-upload-heading p { max-width: 230px; font-size: .67rem; line-height: 1.4; }
+  .ish-upload-back { min-height: 1.9rem; padding: .4rem .55rem; font-size: .61rem; }
+  .ish-upload-layout { grid-template-columns: 1fr; }
+  .ish-upload-main-card { padding: .65rem; }
+  .ish-upload-dropzone { min-height: 245px; padding: 1rem .65rem; }
+  .ish-upload-video-frame { min-height: 200px; }
+  .ish-upload-selection-actions { align-items: stretch; flex-direction: column; }
+  .ish-upload-selection-actions > div { display: grid; grid-template-columns: 1fr 1fr; }
+  .ish-upload-selection-actions > .ish-upload-button { width: 100%; }
+  .ish-upload-button.is-primary { min-width: 0; }
+  .ish-upload-empty-footer { align-items: flex-start; flex-direction: column; }
+  .ish-upload-aside { grid-template-columns: 1fr; }
+  .ish-upload-steps { padding: .55rem .35rem; gap: .2rem; }
+  .ish-upload-steps > span { gap: .25rem; font-size: .54rem; }
+  .ish-upload-steps > span > i { width: 1.3rem; height: 1.3rem; }
+  .ish-upload-footnote { align-items: flex-start; line-height: 1.4; }
+}
+
+@media (max-width: 360px) {
+  .ish-upload-heading { flex-direction: column; }
+  .ish-upload-back { align-self: flex-end; }
+  .ish-upload-steps > span { font-size: .49rem; }
+  .ish-upload-steps > span > i { width: 1.15rem; height: 1.15rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ish-upload-page *, .ish-upload-page *::before, .ish-upload-page *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
